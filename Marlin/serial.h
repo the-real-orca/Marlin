@@ -42,6 +42,10 @@ extern const char echomagic[] PROGMEM;
 extern const char errormagic[] PROGMEM;
 
 #define SERIAL_CHAR(x) ((void)MYSERIAL0.write(x))
+//@FEATURE Dual_Serial_Port: wrapper for Tx: begin(), write(), print(), flush(), ...
+// Is a simple wrapper enought or do I need to map it to the command source???
+
+#define SERIAL_CHAR(x) ((void)MYSERIAL.write(x))
 #define SERIAL_EOL() SERIAL_CHAR('\n')
 
 #define SERIAL_PRINT(x,b)      MYSERIAL0.print(x,b)

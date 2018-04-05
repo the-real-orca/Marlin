@@ -1132,6 +1132,8 @@ inline void get_serial_commands() {
     }
 
   } // queue has space, serial has data
+
+  //@FEATURE Dual_Serial_Port: anternative serial -> command queue
 }
 
 #if ENABLED(SDSUPPORT)
