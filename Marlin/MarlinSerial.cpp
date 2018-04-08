@@ -39,24 +39,10 @@
   #include "MarlinSerial.h"
   #include "Marlin.h"
 
-  struct ring_buffer_r {
-    unsigned char buffer[RX_BUFFER_SIZE];
-    volatile ring_buffer_pos_t head, tail;
-  };
-
+  ring_buffer_r MarlinSerial::rx_buffer = { { 0 }, 0, 0 };
   #if TX_BUFFER_SIZE > 0
-    struct ring_buffer_t {
-      unsigned char buffer[TX_BUFFER_SIZE];
-      volatile uint8_t head, tail;
-    };
-  #endif
-
-  #if UART_PRESENT(SERIAL_PORT)
-    ring_buffer_r rx_buffer = { { 0 }, 0, 0 };
-    #if TX_BUFFER_SIZE > 0
-      ring_buffer_t tx_buffer = { { 0 }, 0, 0 };
-      static bool _written;
-    #endif
+    ring_buffer_t MarlinSerial::tx_buffer = { { 0 }, 0, 0 };
+    bool MarlinSerial::_written;
   #endif
 
   #if ENABLED(SERIAL_XON_XOFF)
@@ -172,17 +158,17 @@
 
   #endif // EMERGENCY_PARSER
 
-  FORCE_INLINE void store_rxd_char() {
-    const ring_buffer_pos_t h = rx_buffer.head,
+  FORCE_INLINE void store_rxd_char(void) {
+    const ring_buffer_pos_t h = MarlinSerial::rx_buffer.head,
                             i = (ring_buffer_pos_t)(h + 1) & (ring_buffer_pos_t)(RX_BUFFER_SIZE - 1);
 
     // If the character is to be stored at the index just before the tail
     // (such that the head would advance to the current tail), the buffer is
     // critical, so don't write the character or advance the head.
-    const char c = M_UDRx;
-    if (i != rx_buffer.tail) {
-      rx_buffer.buffer[h] = c;
-      rx_buffer.head = i;
+    const char c = M_UDRx(T_PORT);
+    if (i != MarlinSerial::rx_buffer.tail) {
+      MarlinSerial::rx_buffer.buffer[h] = c;
+      MarlinSerial::rx_buffer.head = i;
     }
     else {
       #if ENABLED(SERIAL_STATS_DROPPED_RX)
@@ -192,7 +178,7 @@
 
     #if ENABLED(SERIAL_STATS_MAX_RX_QUEUED)
       // calculate count of bytes stored into the RX buffer
-      ring_buffer_pos_t rx_count = (ring_buffer_pos_t)(rx_buffer.head - rx_buffer.tail) & (ring_buffer_pos_t)(RX_BUFFER_SIZE - 1);
+      ring_buffer_pos_t rx_count = (ring_buffer_pos_t)(MarlinSerial::rx_buffer.head - MarlinSerial::rx_buffer.tail) & (ring_buffer_pos_t)(RX_BUFFER_SIZE - 1);
       // Keep track of the maximum count of enqueued bytes
       NOLESS(rx_max_enqueued, rx_count);
     #endif
@@ -204,7 +190,7 @@
       if ((xon_xoff_state & XON_XOFF_CHAR_MASK) == XON_CHAR) {
 
         // calculate count of bytes stored into the RX buffer
-        ring_buffer_pos_t rx_count = (ring_buffer_pos_t)(rx_buffer.head - rx_buffer.tail) & (ring_buffer_pos_t)(RX_BUFFER_SIZE - 1);
+        ring_buffer_pos_t rx_count = (ring_buffer_pos_t)(MarlinSerial::rx_buffer.head - MarlinSerial::rx_buffer.tail) & (ring_buffer_pos_t)(RX_BUFFER_SIZE - 1);
 
         // if we are above 12.5% of RX buffer capacity, send XOFF before
         // we run out of RX buffer space .. We need 325 bytes @ 250kbits/s to
@@ -216,13 +202,13 @@
           // shortcut helps significantly improve the effective datarate
           // at high (>500kbit/s) bitrates, where interrupt overhead
           // becomes a slowdown.
-          if (!TEST(M_UCSRxB, M_UDRIEx) && TEST(M_UCSRxA, M_UDREx)) {
+          if (!TEST(M_UCSRxB(T_PORT), M_UDRIEx(T_PORT)) && TEST(M_UCSRxA(T_PORT), M_UDREx(T_PORT))) {
             // Send an XOFF character
-            M_UDRx = XOFF_CHAR;
+            M_UDRx(T_PORT) = XOFF_CHAR;
             // clear the TXC bit -- "can be cleared by writing a one to its bit
             // location". This makes sure flush() won't return until the bytes
             // actually got written
-            SBI(M_UCSRxA, M_TXCx);
+            SBI(M_UCSRxA(T_PORT), M_TXCx(T_PORT));
             // And remember it was sent
             xon_xoff_state = XOFF_CHAR | XON_XOFF_CHAR_SENT;
           }
@@ -231,12 +217,12 @@
             // TX interrupts enabled. Reenable TX ints and schedule XOFF
             // character to be sent
             #if TX_BUFFER_SIZE > 0
-              SBI(M_UCSRxB, M_UDRIEx);
+              SBI(M_UCSRxB(T_PORT), M_UDRIEx(T_PORT));
               xon_xoff_state = XOFF_CHAR;
             #else
               // We are not using TX interrupts, we will have to send this manually
-              while (!TEST(M_UCSRxA, M_UDREx)) {/* nada */}
-              M_UDRx = XOFF_CHAR;
+              while (!TEST(M_UCSRxA(T_PORT), M_UDREx(T_PORT))) {/* nada */}
+              M_UDRx(T_PORT) = XOFF_CHAR;
               // And remember we already sent it
               xon_xoff_state = XOFF_CHAR | XON_XOFF_CHAR_SENT;
             #endif
@@ -260,38 +246,41 @@
         // Do a priority insertion of an XON/XOFF char, if needed.
         const uint8_t state = xon_xoff_state;
         if (!(state & XON_XOFF_CHAR_SENT)) {
-          M_UDRx = state & XON_XOFF_CHAR_MASK;
+          M_UDRx(T_PORT) = state & XON_XOFF_CHAR_MASK;
           xon_xoff_state = state | XON_XOFF_CHAR_SENT;
         }
         else
       #endif
       { // Send the next byte
-        const uint8_t t = tx_buffer.tail, c = tx_buffer.buffer[t];
-        tx_buffer.tail = (t + 1) & (TX_BUFFER_SIZE - 1);
-        M_UDRx = c;
+        const uint8_t t = MarlinSerial::tx_buffer.tail, c = MarlinSerial::tx_buffer.buffer[t];
+        MarlinSerial::tx_buffer.tail = (t + 1) & (TX_BUFFER_SIZE - 1);
+        M_UDRx(T_PORT) = c;
       }
 
       // clear the TXC bit -- "can be cleared by writing a one to its bit
       // location". This makes sure flush() won't return until the bytes
       // actually got written
-      SBI(M_UCSRxA, M_TXCx);
+      SBI(M_UCSRxA(T_PORT), M_TXCx(T_PORT));
 
       // Disable interrupts if the buffer is empty
-      if (tx_buffer.head == tx_buffer.tail)
-        CBI(M_UCSRxB, M_UDRIEx);
+      if (MarlinSerial::tx_buffer.head == MarlinSerial::tx_buffer.tail)
+        CBI(M_UCSRxB(T_PORT), M_UDRIEx(T_PORT));
     }
 
-    #ifdef M_USARTx_UDRE_vect
-      ISR(M_USARTx_UDRE_vect) { _tx_udr_empty_irq(); }
+    #ifdef M_USARTx_UDRE_vect(T_PORT)
+      ISR(M_USARTx_UDRE_vect(T_PORT)) { _tx_udr_empty_irq(); }
     #endif
 
   #endif // TX_BUFFER_SIZE
 
-  #ifdef M_USARTx_RX_vect
-    ISR(M_USARTx_RX_vect) { store_rxd_char(); }
+  #ifdef M_USARTx_RX_vect(T_PORT)
+      ISR(M_USARTx_RX_vect(T_PORT)) { store_rxd_char(); }
   #endif
 
   // Public Methods
+
+  MarlinSerial::MarlinSerial() {
+  }
 
   void MarlinSerial::begin(const long baud) {
     uint16_t baud_setting;
@@ -305,36 +294,36 @@
     #endif
 
     if (useU2X) {
-      M_UCSRxA = _BV(M_U2Xx);
+      M_UCSRxA(T_PORT) = _BV(M_U2Xx(T_PORT));
       baud_setting = (F_CPU / 4 / baud - 1) / 2;
     }
     else {
-      M_UCSRxA = 0;
+      M_UCSRxA(T_PORT) = 0;
       baud_setting = (F_CPU / 8 / baud - 1) / 2;
     }
 
     // assign the baud_setting, a.k.a. ubbr (USART Baud Rate Register)
-    M_UBRRxH = baud_setting >> 8;
-    M_UBRRxL = baud_setting;
+    M_UBRRxH(T_PORT) = baud_setting >> 8;
+    M_UBRRxL(T_PORT) = baud_setting;
 
-    SBI(M_UCSRxB, M_RXENx);
-    SBI(M_UCSRxB, M_TXENx);
-    SBI(M_UCSRxB, M_RXCIEx);
+    SBI(M_UCSRxB(T_PORT), M_RXENx(T_PORT));
+    SBI(M_UCSRxB(T_PORT), M_TXENx(T_PORT));
+    SBI(M_UCSRxB(T_PORT), M_RXCIEx(T_PORT));
     #if TX_BUFFER_SIZE > 0
-      CBI(M_UCSRxB, M_UDRIEx);
+      CBI(M_UCSRxB(T_PORT), M_UDRIEx(T_PORT));
       _written = false;
     #endif
   }
 
   void MarlinSerial::end() {
-    CBI(M_UCSRxB, M_RXENx);
-    CBI(M_UCSRxB, M_TXENx);
-    CBI(M_UCSRxB, M_RXCIEx);
-    CBI(M_UCSRxB, M_UDRIEx);
+    CBI(M_UCSRxB(T_PORT), M_RXENx(T_PORT));
+    CBI(M_UCSRxB(T_PORT), M_TXENx(T_PORT));
+    CBI(M_UCSRxB(T_PORT), M_RXCIEx(T_PORT));
+    CBI(M_UCSRxB(T_PORT), M_UDRIEx(T_PORT));
   }
 
   void MarlinSerial::checkRx(void) {
-    if (TEST(M_UCSRxA, M_RXCx)) {
+    if (TEST(M_UCSRxA(T_PORT), M_RXCx(T_PORT))) {
       CRITICAL_SECTION_START;
         store_rxd_char();
       CRITICAL_SECTION_END;
@@ -377,11 +366,11 @@
     return v;
   }
 
-  ring_buffer_pos_t MarlinSerial::available(void) {
+  int MarlinSerial::available(void) {
     CRITICAL_SECTION_START;
       const ring_buffer_pos_t h = rx_buffer.head, t = rx_buffer.tail;
     CRITICAL_SECTION_END;
-    return (ring_buffer_pos_t)(RX_BUFFER_SIZE + h - t) & (RX_BUFFER_SIZE - 1);
+    return (int)(RX_BUFFER_SIZE + h - t) & (RX_BUFFER_SIZE - 1);
   }
 
   void MarlinSerial::flush(void) {
@@ -402,14 +391,18 @@
   }
 
   #if TX_BUFFER_SIZE > 0
-    uint8_t MarlinSerial::availableForWrite(void) {
-      CRITICAL_SECTION_START;
-        const uint8_t h = tx_buffer.head, t = tx_buffer.tail;
-      CRITICAL_SECTION_END;
-      return (uint8_t)(TX_BUFFER_SIZE + h - t) & (TX_BUFFER_SIZE - 1);
+    int MarlinSerial::availableForWrite() {
+      #if TX_BUFFER_SIZE > 0
+        CRITICAL_SECTION_START;
+          const uint8_t h = tx_buffer.head, t = tx_buffer.tail;
+        CRITICAL_SECTION_END;
+        return (uint8_t)(TX_BUFFER_SIZE + h - t) & (TX_BUFFER_SIZE - 1);
+      #else
+        return 0;
+      #endif
     }
 
-    void MarlinSerial::write(const uint8_t c) {
+    size_t MarlinSerial::write(uint8_t c) {
       #if ENABLED(SERIAL_XON_XOFF)
         const uint8_t state = xon_xoff_state;
         if (!(state & XON_XOFF_CHAR_SENT)) {
@@ -419,6 +412,7 @@
         }
       #endif
       writeNoHandshake(c);
+      return 1;
     }
 
     void MarlinSerial::writeNoHandshake(const uint8_t c) {
@@ -431,10 +425,10 @@
       // to the data register and be done. This shortcut helps
       // significantly improve the effective datarate at high (>
       // 500kbit/s) bitrates, where interrupt overhead becomes a slowdown.
-      if (emty && TEST(M_UCSRxA, M_UDREx)) {
+      if (emty && TEST(M_UCSRxA(T_PORT), M_UDREx(T_PORT))) {
         CRITICAL_SECTION_START;
-          M_UDRx = c;
-          SBI(M_UCSRxA, M_TXCx);
+          M_UDRx(T_PORT) = c;
+          SBI(M_UCSRxA(T_PORT), M_TXCx(T_PORT));
         CRITICAL_SECTION_END;
         return;
       }
@@ -448,7 +442,7 @@
           // register empty flag ourselves. If it is set, pretend an
           // interrupt has happened and call the handler to free up
           // space for us.
-          if (TEST(M_UCSRxA, M_UDREx))
+          if (TEST(M_UCSRxA(T_PORT), M_UDREx(T_PORT)))
             _tx_udr_empty_irq();
         }
         else {
@@ -459,35 +453,38 @@
       tx_buffer.buffer[tx_buffer.head] = c;
       { CRITICAL_SECTION_START;
           tx_buffer.head = i;
-          SBI(M_UCSRxB, M_UDRIEx);
+          SBI(M_UCSRxB(T_PORT), M_UDRIEx(T_PORT));
         CRITICAL_SECTION_END;
       }
       return;
     }
 
-    void MarlinSerial::flushTX(void) {
-      // TX
-      // If we have never written a byte, no need to flush. This special
-      // case is needed since there is no way to force the TXC (transmit
-      // complete) bit to 1 during initialization
-      if (!_written)
-        return;
+    void MarlinSerial::flushTX() {
+      #if TX_BUFFER_SIZE > 0
+        
+        // TX
+        // If we have never written a byte, no need to flush. This special
+        // case is needed since there is no way to force the TXC (transmit
+        // complete) bit to 1 during initialization
+        if (!_written)
+          return;
 
-      while (TEST(M_UCSRxB, M_UDRIEx) || !TEST(M_UCSRxA, M_TXCx)) {
-        if (!TEST(SREG, SREG_I) && TEST(M_UCSRxB, M_UDRIEx))
-          // Interrupts are globally disabled, but the DR empty
-          // interrupt should be enabled, so poll the DR empty flag to
-          // prevent deadlock
-          if (TEST(M_UCSRxA, M_UDREx))
-            _tx_udr_empty_irq();
-      }
-      // If we get here, nothing is queued anymore (DRIE is disabled) and
-      // the hardware finished tranmission (TXC is set).
+        while (TEST(M_UCSRxB(T_PORT), M_UDRIEx(T_PORT)) || !TEST(M_UCSRxA(T_PORT), M_TXCx(T_PORT))) {
+          if (!TEST(SREG, SREG_I) && TEST(M_UCSRxB(T_PORT), M_UDRIEx(T_PORT)))
+            // Interrupts are globally disabled, but the DR empty
+            // interrupt should be enabled, so poll the DR empty flag to
+            // prevent deadlock
+            if (TEST(M_UCSRxA(T_PORT), M_UDREx(T_PORT)))
+              _tx_udr_empty_irq();
+        }
+        // If we get here, nothing is queued anymore (DRIE is disabled) and
+        // the hardware finished tranmission (TXC is set).
+      #endif
     }
 
   #else // TX_BUFFER_SIZE == 0
 
-    void MarlinSerial::write(const uint8_t c) {
+    size_t MarlinSerial::write(uint8_t c) {
       #if ENABLED(SERIAL_XON_XOFF)
         // Do a priority insertion of an XON/XOFF char, if needed.
         const uint8_t state = xon_xoff_state;
@@ -500,153 +497,12 @@
     }
 
     void MarlinSerial::writeNoHandshake(uint8_t c) {
-      while (!TEST(M_UCSRxA, M_UDREx)) {/* nada */}
-      M_UDRx = c;
+      while (!TEST(M_UCSRxA(T_PORT), M_UDREx(T_PORT))) {/* nada */}
+      M_UDRx(T_PORT) = c;
     }
 
   #endif // TX_BUFFER_SIZE == 0
 
-  /**
-   * Imports from print.h
-   */
-
-  void MarlinSerial::print(char c, int base) {
-    print((long)c, base);
-  }
-
-  void MarlinSerial::print(unsigned char b, int base) {
-    print((unsigned long)b, base);
-  }
-
-  void MarlinSerial::print(int n, int base) {
-    print((long)n, base);
-  }
-
-  void MarlinSerial::print(unsigned int n, int base) {
-    print((unsigned long)n, base);
-  }
-
-  void MarlinSerial::print(long n, int base) {
-    if (base == 0)
-      write(n);
-    else if (base == 10) {
-      if (n < 0) {
-        print('-');
-        n = -n;
-      }
-      printNumber(n, 10);
-    }
-    else
-      printNumber(n, base);
-  }
-
-  void MarlinSerial::print(unsigned long n, int base) {
-    if (base == 0) write(n);
-    else printNumber(n, base);
-  }
-
-  void MarlinSerial::print(double n, int digits) {
-    printFloat(n, digits);
-  }
-
-  void MarlinSerial::println(void) {
-    print('\r');
-    print('\n');
-  }
-
-  void MarlinSerial::println(const String& s) {
-    print(s);
-    println();
-  }
-
-  void MarlinSerial::println(const char c[]) {
-    print(c);
-    println();
-  }
-
-  void MarlinSerial::println(char c, int base) {
-    print(c, base);
-    println();
-  }
-
-  void MarlinSerial::println(unsigned char b, int base) {
-    print(b, base);
-    println();
-  }
-
-  void MarlinSerial::println(int n, int base) {
-    print(n, base);
-    println();
-  }
-
-  void MarlinSerial::println(unsigned int n, int base) {
-    print(n, base);
-    println();
-  }
-
-  void MarlinSerial::println(long n, int base) {
-    print(n, base);
-    println();
-  }
-
-  void MarlinSerial::println(unsigned long n, int base) {
-    print(n, base);
-    println();
-  }
-
-  void MarlinSerial::println(double n, int digits) {
-    print(n, digits);
-    println();
-  }
-
-  // Private Methods
-
-  void MarlinSerial::printNumber(unsigned long n, uint8_t base) {
-    if (n) {
-      unsigned char buf[8 * sizeof(long)]; // Enough space for base 2
-      int8_t i = 0;
-      while (n) {
-        buf[i++] = n % base;
-        n /= base;
-      }
-      while (i--)
-        print((char)(buf[i] + (buf[i] < 10 ? '0' : 'A' - 10)));
-    }
-    else
-      print('0');
-  }
-
-  void MarlinSerial::printFloat(double number, uint8_t digits) {
-    // Handle negative numbers
-    if (number < 0.0) {
-      print('-');
-      number = -number;
-    }
-
-    // Round correctly so that print(1.999, 2) prints as "2.00"
-    double rounding = 0.5;
-    for (uint8_t i = 0; i < digits; ++i)
-      rounding *= 0.1;
-
-    number += rounding;
-
-    // Extract the integer part of the number and print it
-    unsigned long int_part = (unsigned long)number;
-    double remainder = number - (double)int_part;
-    print(int_part);
-
-    // Print the decimal point, but only if there are digits beyond
-    if (digits) {
-      print('.');
-      // Extract digits from the remainder one at a time
-      while (digits--) {
-        remainder *= 10.0;
-        int toPrint = int(remainder);
-        print(toPrint);
-        remainder -= toPrint;
-      }
-    }
-  }
 
   // Preinstantiate
   MarlinSerial customizedSerial;
