@@ -36,6 +36,7 @@
 #else
   #include "MarlinSerial.h"
   #define MYSERIAL0 customizedSerial
+  #define MYSERIAL SERIAL_REGNAME(customizedSerial,SERIAL_PORT,)
 #endif
 #ifdef ALT_SERIAL_PORT
 #if SERIAL_PORT != ALT_SERIAL_PORT

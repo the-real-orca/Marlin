@@ -105,7 +105,7 @@
  *
  * :[0, 1, 2, 3, 4, 5, 6, 7]
  */
-#define SERIAL_PORT 0
+#define SERIAL_PORT 2
 // TODO FEATURE #define ALT_SERIAL_PORT 2
 
 /**

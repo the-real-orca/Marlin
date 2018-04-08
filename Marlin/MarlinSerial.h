@@ -55,27 +55,22 @@
 
 // Registers used by MarlinSerial class (expanded depending on selected serial port)
 #define T_PORT SERIAL_PORT
-#define M_UCSRxA(T_PORT)           SERIAL_REGNAME(UCSR,T_PORT,A) // defines M_UCSRxA to be UCSRnA where n is the serial port number
-#define M_UCSRxB(T_PORT)           SERIAL_REGNAME(UCSR,T_PORT,B)
-#define M_RXENx(T_PORT)            SERIAL_REGNAME(RXEN,T_PORT,)
-#define M_TXENx(T_PORT)            SERIAL_REGNAME(TXEN,T_PORT,)
-#define M_TXCx(T_PORT)             SERIAL_REGNAME(TXC,T_PORT,)
-#define M_RXCIEx(T_PORT)           SERIAL_REGNAME(RXCIE,T_PORT,)
-#define M_UDREx(T_PORT)            SERIAL_REGNAME(UDRE,T_PORT,)
-#define M_UDRIEx(T_PORT)           SERIAL_REGNAME(UDRIE,T_PORT,)
-#define M_UDRx(T_PORT)             SERIAL_REGNAME(UDR,T_PORT,)
-#define M_UBRRxH(T_PORT)           SERIAL_REGNAME(UBRR,T_PORT,H)
-#define M_UBRRxL(T_PORT)           SERIAL_REGNAME(UBRR,T_PORT,L)
-#define M_RXCx(T_PORT)             SERIAL_REGNAME(RXC,T_PORT,)
-#define M_USARTx_RX_vect(T_PORT)   SERIAL_REGNAME(USART,T_PORT,_RX_vect)
-#define M_U2Xx(T_PORT)             SERIAL_REGNAME(U2X,T_PORT,)
-#define M_USARTx_UDRE_vect(T_PORT) SERIAL_REGNAME(USART,T_PORT,_UDRE_vect)
+#define M_UCSRxA           SERIAL_REGNAME(UCSR,T_PORT,A) // defines M_UCSRxA to be UCSRnA where n is the serial port number
+#define M_UCSRxB           SERIAL_REGNAME(UCSR,T_PORT,B)
+#define M_RXENx            SERIAL_REGNAME(RXEN,T_PORT,)
+#define M_TXENx            SERIAL_REGNAME(TXEN,T_PORT,)
+#define M_TXCx             SERIAL_REGNAME(TXC,T_PORT,)
+#define M_RXCIEx           SERIAL_REGNAME(RXCIE,T_PORT,)
+#define M_UDREx            SERIAL_REGNAME(UDRE,T_PORT,)
+#define M_UDRIEx           SERIAL_REGNAME(UDRIE,T_PORT,)
+#define M_UDRx             SERIAL_REGNAME(UDR,T_PORT,)
+#define M_UBRRxH           SERIAL_REGNAME(UBRR,T_PORT,H)
+#define M_UBRRxL           SERIAL_REGNAME(UBRR,T_PORT,L)
+#define M_RXCx             SERIAL_REGNAME(RXC,T_PORT,)
+#define M_USARTx_RX_vect   SERIAL_REGNAME(USART,T_PORT,_RX_vect)
+#define M_U2Xx             SERIAL_REGNAME(U2X,T_PORT,)
+#define M_USARTx_UDRE_vect SERIAL_REGNAME(USART,T_PORT,_UDRE_vect)
 
-#define DEC 10
-#define HEX 16
-#define OCT 8
-#define BIN 2
-#define BYTE 0
 
 // Define constants and variables for buffering serial data.
 // Use only 0 or powers of 2 greater than 1
@@ -112,9 +107,10 @@
 
   class MarlinSerial { //: public Stream
   class MarlinSerial : public Stream {
+  #define MarlinSerialX SERIAL_REGNAME(MarlinSerial,SERIAL_PORT,)
+  class MarlinSerialX : public Stream {
 
     public:
-      MarlinSerial();
       void begin(const long);
       void end();
       int peek(void);
@@ -136,9 +132,6 @@
       #endif
 
     private:
-      void printNumber(unsigned long, const uint8_t);
-      void printFloat(double, uint8_t);
-
       static ring_buffer_r rx_buffer;
       #if ENABLED(SERIAL_STATS_DROPPED_RX)
         static uint8_t rx_dropped_bytes;
@@ -161,9 +154,12 @@
     public:
       size_t write(const uint8_t *buffer, size_t size) { size_t count = size; while (count--) write(*buffer++); return size; }
 
+      // interrupt functions
+      static FORCE_INLINE void store_rxd_char(void);
+      static FORCE_INLINE void tx_udr_empty_irq(void);
   };
 
-  extern MarlinSerial customizedSerial;
+  extern MarlinSerialX SERIAL_REGNAME(customizedSerial,SERIAL_PORT,);
 
 #endif // !(__AVR__ && USBCON)
 
