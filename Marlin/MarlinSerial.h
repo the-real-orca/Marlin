@@ -106,14 +106,6 @@
     volatile uint8_t head, tail;
   } ring_buffer_t;
 
-  #if ENABLED(SERIAL_STATS_DROPPED_RX)
-    extern uint8_t rx_dropped_bytes;  // TODO
-  #endif
-
-  #if ENABLED(SERIAL_STATS_MAX_RX_QUEUED)
-    extern ring_buffer_pos_t rx_max_enqueued; // TODO
-  #endif
-
   #if ENABLED(EMERGENCY_PARSER)
     extern bool killed_by_M112;
   #endif
@@ -148,13 +140,24 @@
       void printFloat(double, uint8_t);
 
       static ring_buffer_r rx_buffer;
+      #if ENABLED(SERIAL_STATS_DROPPED_RX)
+        static uint8_t rx_dropped_bytes;
+      #endif
+      #if ENABLED(SERIAL_STATS_MAX_RX_QUEUED)
+        static ring_buffer_pos_t rx_max_enqueued;
+      #endif
       friend FORCE_INLINE void store_rxd_char(void);
+
       #if TX_BUFFER_SIZE > 0
         static ring_buffer_t tx_buffer;
         static bool _written;
         friend FORCE_INLINE void _tx_udr_empty_irq(void);
       #endif
 
+      #if ENABLED(SERIAL_XON_XOFF)
+        static uint8_t xon_xoff_state;
+      #endif
+      
     public:
       size_t write(const uint8_t *buffer, size_t size) { size_t count = size; while (count--) write(*buffer++); return size; }
 
