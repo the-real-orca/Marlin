@@ -992,13 +992,11 @@ void gcode_line_error(const char* err, bool doFlush = true) {
  * Exit when the buffer is full or when no more characters are
  * left on the serial port.
  */
-template <typename T>
-inline void get_serial_commands(T &serial_stream) {
+inline void get_serial_commands(Stream &serial_stream) {
   static char serial_line_buffer[MAX_CMD_SIZE];
   static bool serial_comment_mode = false;
   // Number of characters read in the current line of serial input
   static int serial_count = 0;
-  static void* active_stream;
 
   // If the command buffer is empty for too long,
   // send "wait" to indicate Marlin is still waiting.
@@ -1012,11 +1010,17 @@ inline void get_serial_commands(T &serial_stream) {
   #endif
 
   /**
-   * ignore other serial port while we still receive data from the active port
+   * Ignore other serial port while we still receive data from the active port (MYSERIAL)
+   * Otherwise switch to current ports if we receive data on this port.
    */
-  if ( serial_count && &serial_stream != active_stream )
-    return;
-  active_stream = &serial_stream;
+  if ( &serial_stream != &MYSERIAL ) {
+    if ( serial_count )
+      return; // there is an incomplete command from the active port in the queue
+    if ( serial_stream.available() )
+      MYSERIAL = serial_stream; // switch active port
+    else
+      return; // no data on alternative port
+  }
 
   /**
    * Loop while serial characters are incoming and the queue is not full
@@ -1130,8 +1134,6 @@ inline void get_serial_commands(T &serial_stream) {
     }
 
   } // queue has space, serial has data
-
-  //@FEATURE Dual_Serial_Port: anternative serial -> command queue
 }
 
 #if ENABLED(SDSUPPORT)
@@ -1228,11 +1230,11 @@ void get_available_commands() {
   // if any immediate commands remain, don't get other commands yet
   if (drain_injected_commands_P()) return;
 
-  get_serial_commands(MYSERIAL);
-#ifdef ALTSERIAL
-  // read commands from alternative serial port
-  get_serial_commands(ALTSERIAL);
-#endif
+  get_serial_commands(PRIM_SERIAL);
+  #ifdef SEC_SERIAL
+    // read commands from alternative serial port
+    get_serial_commands(SEC_SERIAL);
+  #endif
 
   #if ENABLED(SDSUPPORT)
     get_sdcard_commands();
@@ -14343,7 +14345,10 @@ void setup() {
     disableStepperDrivers();
   #endif
 
-  MYSERIAL.begin(BAUDRATE);
+  PRIM_SERIAL.begin(BAUDRATE);
+  #ifdef SEC_SERIAL
+    SEC_SERIAL.begin(BAUDRATE);
+  #endif
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START();
 

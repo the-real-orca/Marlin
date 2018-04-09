@@ -28,25 +28,22 @@
 #ifdef USBCON
   #include <HardwareSerial.h>
   #if ENABLED(BLUETOOTH)
-    #define MYSERIAL bluetoothSerial
+    #define PRIM_SERIAL bluetoothSerial
   #else
-    #define MYSERIAL Serial
+    #define PRIM_SERIAL Serial
   #endif // BLUETOOTH
 #else
   #include "MarlinSerial.h"
-//  #define MYSERIAL SERIAL_REGNAME(customizedSerial,SERIAL_PORT,)
+  #define PRIM_SERIAL SERIAL_REGNAME(customizedSerial,SERIAL_PORT,)
   #ifdef SEC_SERIAL_PORT
-//    #define SEC_SERIAL SERIAL_REGNAME(customizedSerial,SEC_SERIAL_PORT,)
+    #define SEC_SERIAL SERIAL_REGNAME(customizedSerial,SEC_SERIAL_PORT,)
   #endif
-  #define MYSERIAL customizedSerial0
-  #define SEC_SERIAL customizedSerial2
 #endif
+// MYSERIAL is the currently active serial port
+extern Stream &MYSERIAL;
 
 extern const char echomagic[] PROGMEM;
 extern const char errormagic[] PROGMEM;
-
-//@FEATURE Dual_Serial_Port: wrapper for Tx: begin(), write(), print(), flush(), ...
-// Is a simple wrapper enought or do I need to map it to the command source???
 
 #define SERIAL_CHAR(x) ((void)MYSERIAL.write(x))
 #define SERIAL_EOL() SERIAL_CHAR('\n')
