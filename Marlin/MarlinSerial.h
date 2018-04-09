@@ -75,6 +75,12 @@
   // include declaration of MarlinSerial for SERIAL_PORT
   #define T_PORT SERIAL_PORT
   #include "MarlinSerial_Template.h"
+  #undef T_PORT
+  #ifdef SEC_SERIAL_PORT
+    #define T_PORT SEC_SERIAL_PORT
+    #include "MarlinSerial_Template.h"
+    #undef T_PORT
+  #endif
 
 #endif // !USBCON
 

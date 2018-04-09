@@ -32,40 +32,37 @@
  */
 
 #ifdef T_PORT
-// Registers used by MarlinSerial class (expanded depending on selected serial port)
-#undef M_UCSRxA
-#define M_UCSRxA           SERIAL_REGNAME(UCSR,T_PORT,A) // defines M_UCSRxA to be UCSRnA where n is the serial port number
-#undef M_UCSRxB
-#define M_UCSRxB           SERIAL_REGNAME(UCSR,T_PORT,B)
-#undef M_RXENx
-#define M_RXENx            SERIAL_REGNAME(RXEN,T_PORT,)
-#undef M_TXENx
-#define M_TXENx            SERIAL_REGNAME(TXEN,T_PORT,)
-#undef M_TXCx
-#define M_TXCx             SERIAL_REGNAME(TXC,T_PORT,)
-#undef M_RXCIEx
-#define M_RXCIEx           SERIAL_REGNAME(RXCIE,T_PORT,)
-#undef M_UDREx
-#define M_UDREx            SERIAL_REGNAME(UDRE,T_PORT,)
-#undef M_UDRIEx
-#define M_UDRIEx           SERIAL_REGNAME(UDRIE,T_PORT,)
-#undef M_UDRx
-#define M_UDRx             SERIAL_REGNAME(UDR,T_PORT,)
-#undef M_UBRRxH
-#define M_UBRRxH           SERIAL_REGNAME(UBRR,T_PORT,H)
-#undef M_UBRRxL
-#define M_UBRRxL           SERIAL_REGNAME(UBRR,T_PORT,L)
-#undef M_RXCx
-#define M_RXCx             SERIAL_REGNAME(RXC,T_PORT,)
-#undef M_USARTx_RX_vect
-#define M_USARTx_RX_vect   SERIAL_REGNAME(USART,T_PORT,_RX_vect)
-#undef M_U2Xx
-#define M_U2Xx             SERIAL_REGNAME(U2X,T_PORT,)
-#undef M_USARTx_UDRE_vect
-#define M_USARTx_UDRE_vect SERIAL_REGNAME(USART,T_PORT,_UDRE_vect)
-
-  #include "MarlinSerial.h"
-  #include "Marlin.h"
+  // Registers used by MarlinSerial class (expanded depending on selected serial port)
+  #undef M_UCSRxA
+  #define M_UCSRxA           SERIAL_REGNAME(UCSR,T_PORT,A) // defines M_UCSRxA to be UCSRnA where n is the serial port number
+  #undef M_UCSRxB
+  #define M_UCSRxB           SERIAL_REGNAME(UCSR,T_PORT,B)
+  #undef M_RXENx
+  #define M_RXENx            SERIAL_REGNAME(RXEN,T_PORT,)
+  #undef M_TXENx
+  #define M_TXENx            SERIAL_REGNAME(TXEN,T_PORT,)
+  #undef M_TXCx
+  #define M_TXCx             SERIAL_REGNAME(TXC,T_PORT,)
+  #undef M_RXCIEx
+  #define M_RXCIEx           SERIAL_REGNAME(RXCIE,T_PORT,)
+  #undef M_UDREx
+  #define M_UDREx            SERIAL_REGNAME(UDRE,T_PORT,)
+  #undef M_UDRIEx
+  #define M_UDRIEx           SERIAL_REGNAME(UDRIE,T_PORT,)
+  #undef M_UDRx
+  #define M_UDRx             SERIAL_REGNAME(UDR,T_PORT,)
+  #undef M_UBRRxH
+  #define M_UBRRxH           SERIAL_REGNAME(UBRR,T_PORT,H)
+  #undef M_UBRRxL
+  #define M_UBRRxL           SERIAL_REGNAME(UBRR,T_PORT,L)
+  #undef M_RXCx
+  #define M_RXCx             SERIAL_REGNAME(RXC,T_PORT,)
+  #undef M_USARTx_RX_vect
+  #define M_USARTx_RX_vect   SERIAL_REGNAME(USART,T_PORT,_RX_vect)
+  #undef M_U2Xx
+  #define M_U2Xx             SERIAL_REGNAME(U2X,T_PORT,)
+  #undef M_USARTx_UDRE_vect
+  #define M_USARTx_UDRE_vect SERIAL_REGNAME(USART,T_PORT,_UDRE_vect)
 
   ring_buffer_r MarlinSerialX::rx_buffer = { { 0 }, 0, 0 };
   #if TX_BUFFER_SIZE > 0
@@ -74,11 +71,6 @@
   #endif
 
   #if ENABLED(SERIAL_XON_XOFF)
-    constexpr uint8_t XON_XOFF_CHAR_SENT = 0x80;  // XON / XOFF Character was sent
-    constexpr uint8_t XON_XOFF_CHAR_MASK = 0x1F;  // XON / XOFF character to send
-    // XON / XOFF character definitions
-    constexpr uint8_t XON_CHAR  = 17;
-    constexpr uint8_t XOFF_CHAR = 19;
     uint8_t MarlinSerialX::xon_xoff_state = XON_XOFF_CHAR_SENT | XON_CHAR;
   #endif
 
@@ -91,6 +83,8 @@
   #endif
 
   #if ENABLED(EMERGENCY_PARSER)
+    #undef emergency_parserX
+    #define emergency_parserX SERIAL_REGNAME(emergency_parser,T_PORT,)
 
     #include "stepper.h"
     #include "language.h"
@@ -98,7 +92,7 @@
     // Currently looking for: M108, M112, M410
     // If you alter the parser please don't forget to update the capabilities in Conditionals_post.h
 
-    FORCE_INLINE void emergency_parser(const unsigned char c) {
+    FORCE_INLINE void emergency_parserX(const unsigned char c) {
 
       static e_parser_state state = state_RESET;
 
@@ -256,7 +250,7 @@
     #endif // SERIAL_XON_XOFF
 
     #if ENABLED(EMERGENCY_PARSER)
-      emergency_parser(c);
+      emergency_parserX(c);
     #endif
   }
 
@@ -526,6 +520,6 @@
 
 
   // Preinstantiate
-  MarlinSerialX SERIAL_REGNAME(customizedSerial,SERIAL_PORT,);
+  MarlinSerialX SERIAL_REGNAME(customizedSerial,T_PORT,);
 
 #endif // T_PORT

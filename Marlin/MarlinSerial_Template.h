@@ -36,7 +36,7 @@
 
 #ifdef T_PORT
   #undef MarlinSerialX
-  #define MarlinSerialX SERIAL_REGNAME(MarlinSerial,SERIAL_PORT,)
+  #define MarlinSerialX SERIAL_REGNAME(MarlinSerial,T_PORT,)
   class MarlinSerialX : public Stream {
 
     public:
@@ -88,6 +88,6 @@
       static FORCE_INLINE void tx_udr_empty_irq(void);
   };
 
-  extern MarlinSerialX SERIAL_REGNAME(customizedSerial,SERIAL_PORT,);
+  extern MarlinSerialX SERIAL_REGNAME(customizedSerial,T_PORT,);
 
 #endif // T_PORT

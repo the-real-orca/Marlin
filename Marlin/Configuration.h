@@ -105,8 +105,17 @@
  *
  * :[0, 1, 2, 3, 4, 5, 6, 7]
  */
-#define SERIAL_PORT 2
-// TODO FEATURE #define ALT_SERIAL_PORT 2
+#define SERIAL_PORT 0
+
+/**
+ * Enable a second serial port for an external Bluetooth or WiFi adapter.
+ * You can use both serial ports (the primary and secondary) parallel, without recombiling
+ * the firmware. 
+ * However you cannot use them simultaneously. Meaning you need to make a short (transmission)
+ * pause and wait until all commands you send on one port are finished, before you can 
+ * switch to the other port.
+ */ 
+#define SEC_SERIAL_PORT 2
 
 /**
  * This setting determines the communication speed of the printer.
