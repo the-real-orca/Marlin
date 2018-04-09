@@ -26,7 +26,8 @@
  *
  * Modified 28 September 2010 by Mark Sproul
  * Modified 14 February 2016 by Andreas Hardtung (added tx buffer)
-*/
+ * Modified 09 April 2018 by Stephan Veigl (multi instance version)
+ */
 
 #ifndef MARLINSERIAL_H
 #define MARLINSERIAL_H
@@ -53,38 +54,8 @@
   #define SERIAL_REGNAME_INTERNAL(registerbase,number,suffix) registerbase##number##suffix
 #endif
 
-// Registers used by MarlinSerial class (expanded depending on selected serial port)
-#define T_PORT SERIAL_PORT
-#define M_UCSRxA           SERIAL_REGNAME(UCSR,T_PORT,A) // defines M_UCSRxA to be UCSRnA where n is the serial port number
-#define M_UCSRxB           SERIAL_REGNAME(UCSR,T_PORT,B)
-#define M_RXENx            SERIAL_REGNAME(RXEN,T_PORT,)
-#define M_TXENx            SERIAL_REGNAME(TXEN,T_PORT,)
-#define M_TXCx             SERIAL_REGNAME(TXC,T_PORT,)
-#define M_RXCIEx           SERIAL_REGNAME(RXCIE,T_PORT,)
-#define M_UDREx            SERIAL_REGNAME(UDRE,T_PORT,)
-#define M_UDRIEx           SERIAL_REGNAME(UDRIE,T_PORT,)
-#define M_UDRx             SERIAL_REGNAME(UDR,T_PORT,)
-#define M_UBRRxH           SERIAL_REGNAME(UBRR,T_PORT,H)
-#define M_UBRRxL           SERIAL_REGNAME(UBRR,T_PORT,L)
-#define M_RXCx             SERIAL_REGNAME(RXC,T_PORT,)
-#define M_USARTx_RX_vect   SERIAL_REGNAME(USART,T_PORT,_RX_vect)
-#define M_U2Xx             SERIAL_REGNAME(U2X,T_PORT,)
-#define M_USARTx_UDRE_vect SERIAL_REGNAME(USART,T_PORT,_UDRE_vect)
-
-
-// Define constants and variables for buffering serial data.
-// Use only 0 or powers of 2 greater than 1
-// : [0, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, ...]
-#ifndef RX_BUFFER_SIZE
-  #define RX_BUFFER_SIZE 128
-#endif
-// 256 is the max TX buffer limit due to uint8_t head and tail.
-#ifndef TX_BUFFER_SIZE
-  #define TX_BUFFER_SIZE 32
-#endif
-
-#if !(defined(__AVR__) && defined(USBCON))
-
+#ifndef USBCON
+  
   #if RX_BUFFER_SIZE > 256
     typedef uint16_t ring_buffer_pos_t;
   #else
@@ -101,70 +72,14 @@
     volatile uint8_t head, tail;
   } ring_buffer_t;
 
-  #if ENABLED(EMERGENCY_PARSER)
-    extern bool killed_by_M112;
-  #endif
+  // include declaration of MarlinSerial for SERIAL_PORT
+  #define T_PORT SERIAL_PORT
+  #include "MarlinSerial_Template.h"
 
-  class MarlinSerial { //: public Stream
-  class MarlinSerial : public Stream {
-  #define MarlinSerialX SERIAL_REGNAME(MarlinSerial,SERIAL_PORT,)
-  class MarlinSerialX : public Stream {
-
-    public:
-      void begin(const long);
-      void end();
-      int peek(void);
-      int read(void);
-      void flush(void);
-      int available(void);
-      void checkRx(void);
-      size_t write(uint8_t c);
-      int availableForWrite();
-      void flushTX();
-      void writeNoHandshake(const uint8_t c);
-
-      #if ENABLED(SERIAL_STATS_DROPPED_RX)
-        FORCE_INLINE uint32_t dropped() { return rx_dropped_bytes; }
-      #endif
-
-      #if ENABLED(SERIAL_STATS_MAX_RX_QUEUED)
-        FORCE_INLINE ring_buffer_pos_t rxMaxEnqueued() { return rx_max_enqueued; }
-      #endif
-
-    private:
-      static ring_buffer_r rx_buffer;
-      #if ENABLED(SERIAL_STATS_DROPPED_RX)
-        static uint8_t rx_dropped_bytes;
-      #endif
-      #if ENABLED(SERIAL_STATS_MAX_RX_QUEUED)
-        static ring_buffer_pos_t rx_max_enqueued;
-      #endif
-      friend FORCE_INLINE void store_rxd_char(void);
-
-      #if TX_BUFFER_SIZE > 0
-        static ring_buffer_t tx_buffer;
-        static bool _written;
-        friend FORCE_INLINE void _tx_udr_empty_irq(void);
-      #endif
-
-      #if ENABLED(SERIAL_XON_XOFF)
-        static uint8_t xon_xoff_state;
-      #endif
-      
-    public:
-      size_t write(const uint8_t *buffer, size_t size) { size_t count = size; while (count--) write(*buffer++); return size; }
-
-      // interrupt functions
-      static FORCE_INLINE void store_rxd_char(void);
-      static FORCE_INLINE void tx_udr_empty_irq(void);
-  };
-
-  extern MarlinSerialX SERIAL_REGNAME(customizedSerial,SERIAL_PORT,);
-
-#endif // !(__AVR__ && USBCON)
+#endif // !USBCON
 
 // Use the UART for Bluetooth in AT90USB configurations
-#if defined(__AVR__) && defined(USBCON) && ENABLED(BLUETOOTH)
+#if defined(USBCON) && ENABLED(BLUETOOTH)
   extern HardwareSerial bluetoothSerial;
 #endif
 
