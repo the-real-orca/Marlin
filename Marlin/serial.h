@@ -40,22 +40,23 @@
   #endif
 #endif
 // MYSERIAL is the currently active serial port
-extern Stream &MYSERIAL;
+extern Stream *MYSERIAL;
 
 extern const char echomagic[] PROGMEM;
 extern const char errormagic[] PROGMEM;
 
-#define SERIAL_CHAR(x) ((void)MYSERIAL.write(x))
+#define SERIAL_CHAR(x) ((void)MYSERIAL->write(x))
 #define SERIAL_EOL() SERIAL_CHAR('\n')
 
 #define SERIAL_PROTOCOLCHAR(x)              SERIAL_CHAR(x)
-#define SERIAL_PROTOCOL(x)                  (MYSERIAL.print(x))
-#define SERIAL_PROTOCOL_F(x,y)              (MYSERIAL.print(x,y))
+#define SERIAL_PROTOCOL(x)                  (MYSERIAL->print(x))
+#define SERIAL_PROTOCOL_F(x,y)              (MYSERIAL->print(x,y))
 #define SERIAL_PROTOCOLPGM(x)               (serialprintPGM(PSTR(x)))
-#define SERIAL_PROTOCOLLN(x)                do{ MYSERIAL.print(x); SERIAL_EOL(); }while(0)
+#define SERIAL_PROTOCOLLN(x)                do{ MYSERIAL->print(x); SERIAL_EOL(); }while(0)
 #define SERIAL_PROTOCOLLNPGM(x)             (serialprintPGM(PSTR(x "\n")))
 #define SERIAL_PROTOCOLPAIR(name, value)    (serial_echopair_P(PSTR(name),(value)))
 #define SERIAL_PROTOCOLLNPAIR(name, value)  do{ SERIAL_PROTOCOLPAIR(name, value); SERIAL_EOL(); }while(0)
+#define SERIAL_FLUSH(x)                     (MYSERIAL->flush())
 
 #define SERIAL_ECHO_START()            (serialprintPGM(echomagic))
 #define SERIAL_ECHO(x)                 SERIAL_PROTOCOL(x)
@@ -100,7 +101,7 @@ void serial_spaces(uint8_t count);
 // Functions for serial printing from PROGMEM. (Saves loads of SRAM.)
 //
 FORCE_INLINE void serialprintPGM(const char* str) {
-  while (char ch = pgm_read_byte(str++)) MYSERIAL.write(ch);
+  while (char ch = pgm_read_byte(str++)) MYSERIAL->write(ch);
 }
 
 #endif // __SERIAL_H__

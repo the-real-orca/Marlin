@@ -1009,18 +1009,26 @@ inline void get_serial_commands(Stream &serial_stream) {
     }
   #endif
 
-  /**
-   * Ignore other serial port while we still receive data from the active port (MYSERIAL)
-   * Otherwise switch to current ports if we receive data on this port.
-   */
-  if ( &serial_stream != &MYSERIAL ) {
-    if ( serial_count )
-      return; // there is an incomplete command from the active port in the queue
-    if ( serial_stream.available() )
-      MYSERIAL = serial_stream; // switch active port
-    else
-      return; // no data on alternative port
-  }
+  #ifdef SEC_SERIAL_PORT
+    /**
+     * Ignore other serial port while we still receive data from the active port (MYSERIAL)
+     * Otherwise switch to current ports if we receive data on this port.
+     */
+    if ( &serial_stream != MYSERIAL ) {
+      if ( serial_stream.available() ) {
+        if ( serial_count || busy_state != NOT_BUSY ) {
+          // there is an incomplete command from the active port in the queue / processed
+          serial_stream.print(MSG_SERIAL_PORT_BLOCKED"\n");
+          while (serial_stream.read() >= 0) {} // clear input buffer
+          return; 
+        }
+serial_stream.print("\nswitch port\n"); // TODO DEBUG MSG
+        MYSERIAL = &serial_stream; // switch active port
+      }
+      else
+        return; // no data on serial port
+    }
+  #endif
 
   /**
    * Loop while serial characters are incoming and the queue is not full
@@ -1029,6 +1037,9 @@ inline void get_serial_commands(Stream &serial_stream) {
   while (commands_in_queue < BUFSIZE && (c = serial_stream.read()) >= 0) {
 
     char serial_char = c;
+    #if ENABLED(SERIAL_ECHO_INPUT)
+      serial_stream.write(serial_char);
+    #endif
 
     /**
      * If the character ends the line
@@ -12483,7 +12494,7 @@ void process_next_command() {
  */
 void FlushSerialRequestResend() {
   //char command_queue[cmd_queue_index_r][100]="Resend:";
-  MYSERIAL.flush();
+  SERIAL_FLUSH();
   SERIAL_PROTOCOLPGM(MSG_RESEND);
   SERIAL_PROTOCOLLN(gcode_LastN + 1);
   ok_to_send();

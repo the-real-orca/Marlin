@@ -128,6 +128,11 @@
  */
 #define BAUDRATE 115200 // 250000
 
+/**
+ * activate echo for serial port
+ */
+#define SERIAL_ECHO_INPUT
+
 // Enable the Bluetooth serial interface on AT90USB devices
 //#define BLUETOOTH
 
