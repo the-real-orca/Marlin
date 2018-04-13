@@ -355,7 +355,7 @@
 
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-#define BANG_MAX 255     // Limits current to nozzle while in bang-bang mode; 255=full current
+#define BANG_MAX 200     // Limits current to nozzle while in bang-bang mode; 255=full current
 #define PID_MAX BANG_MAX // Limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
 #define PID_K1 0.95      // Smoothing factor within any PID loop
 #if ENABLED(PIDTEMP)
@@ -365,15 +365,20 @@
   //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
   //#define PID_PARAMS_PER_HOTEND // Uses separate PID parameters for each extruder (useful for mismatched extruders)
                                   // Set/get with gcode: M301 E[extruder number, 0-2]
-  #define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
+  #define PID_FUNCTIONAL_RANGE 50 // If the temperature difference between the target temperature and the actual temperature
                                   // is more than PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
 
   // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 
-  // Prusa i3 ION
-  #define  DEFAULT_Kp 13.89
-  #define  DEFAULT_Ki 0.89
-  #define  DEFAULT_Kd 54.27
+  // Prusa i3 ION 24V
+  #define  DEFAULT_Kp 5.15
+  #define  DEFAULT_Ki 0.64
+  #define  DEFAULT_Kd 10.37
+
+  // Prusa i3 ION 12V
+  //#define  DEFAULT_Kp 13.89
+  //#define  DEFAULT_Ki 0.89
+  //#define  DEFAULT_Kd 54.27
 
   // MakerGear
   //#define DEFAULT_Kp 7.0
@@ -414,7 +419,8 @@
  * When set to any value below 255, enables a form of PWM to the bed that acts like a divider
  * so don't use it unless you are OK with PWM on your bed. (See the comment on enabling PIDTEMPBED)
  */
-#define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
+//#define MAX_BED_POWER 255 // full power @ 12V
+#define MAX_BED_POWER 200 // 200 -> 10A limit @ 24V // limits duty cycle to bed; 255=full current
 
 #if ENABLED(PIDTEMPBED)
 
