@@ -1022,7 +1022,6 @@ inline void get_serial_commands(Stream &serial_stream) {
           while (serial_stream.read() >= 0) {} // clear input buffer
           return; 
         }
-serial_stream.print("\nswitch port\n"); // TODO DEBUG MSG
         MYSERIAL = &serial_stream; // switch active port
       }
       else

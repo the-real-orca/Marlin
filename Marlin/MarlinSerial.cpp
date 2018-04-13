@@ -40,8 +40,11 @@
 
 // MYSERIAL is the currently active serial port
 // For the beginning (and for single port systems) we use the primary serial port.
-Stream *MYSERIAL = &PRIM_SERIAL;
-
+#ifdef SEC_SERIAL_PORT constexpr 
+  Stream *MYSERIAL = &PRIM_SERIAL;
+#else
+  constexpr Stream *MYSERIAL = &PRIM_SERIAL;
+#endif 
 
 #if !defined(USBCON) && (defined(UBRRH) || defined(UBRR0H) || defined(UBRR1H) || defined(UBRR2H) || defined(UBRR3H))
 
