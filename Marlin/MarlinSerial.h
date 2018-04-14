@@ -26,7 +26,7 @@
  *
  * Modified 28 September 2010 by Mark Sproul
  * Modified 14 February 2016 by Andreas Hardtung (added tx buffer)
- * Modified 09 April 2018 by Stephan Veigl (multi instance version)
+ * Modified 15 April 2018 by Stephan Veigl (multi instance version)
  */
 
 #ifndef MARLINSERIAL_H
@@ -52,6 +52,17 @@
   #define SERIAL_REGNAME_INTERNAL(registerbase,number,suffix) registerbase##suffix
 #else
   #define SERIAL_REGNAME_INTERNAL(registerbase,number,suffix) registerbase##number##suffix
+#endif
+
+// Define constants and variables for buffering serial data.
+// Use only 0 or powers of 2 greater than 1
+// : [0, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, ...]
+#ifndef RX_BUFFER_SIZE
+  #define RX_BUFFER_SIZE 128
+#endif
+// 256 is the max TX buffer limit due to uint8_t head and tail.
+#ifndef TX_BUFFER_SIZE
+  #define TX_BUFFER_SIZE 32
 #endif
 
 #if !(defined(__AVR__) && defined(USBCON))

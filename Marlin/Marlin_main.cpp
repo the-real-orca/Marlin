@@ -1043,6 +1043,9 @@ inline void get_serial_commands(Stream &serial_stream) {
   while (commands_in_queue < BUFSIZE && (c = serial_stream.read()) >= 0) {
 
     char serial_char = c;
+    #if ENABLED(SERIAL_ECHO_INPUT)
+      serial_stream.write(serial_char);
+    #endif
 
     /**
      * If the character ends the line

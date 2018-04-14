@@ -28,7 +28,7 @@
  * Modified 28 September 2010 by Mark Sproul
  * Modified 14 February 2016 by Andreas Hardtung (added tx buffer)
  * Modified 01 October 2017 by Eduardo José Tagle (added XON/XOFF)
- * Modified 09 April 2018 by Stephan Veigl (multi instance version)
+ * Modified 15 April 2018 by Stephan Veigl (multi instance version)
  */
 
 // Disable HardwareSerial.cpp to support chips without a UART (Attiny, etc.)
@@ -40,11 +40,7 @@
 
 // myserial is the currently active serial port
 // For the beginning (and for single port systems) we use the primary serial port.
-#ifdef SEC_SERIAL_PORT 
-  Stream *myserial = &PRIM_SERIAL;
-#else
-  constexpr Stream *myserial = &PRIM_SERIAL;
-#endif 
+Stream *myserial = &PRIM_SERIAL;
 
 #if !(defined(__AVR__) && defined(USBCON)) && (defined(UBRRH) || defined(UBRR0H) || defined(UBRR1H) || defined(UBRR2H) || defined(UBRR3H))
 

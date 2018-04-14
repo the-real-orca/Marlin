@@ -48,7 +48,6 @@
       int available(void);
       void checkRx(void);
       size_t write(uint8_t c);
-      int availableForWrite();
       void flushTX();
       void writeNoHandshake(const uint8_t c);
 
@@ -74,6 +73,7 @@
         static ring_buffer_t tx_buffer;
         static bool _written;
         friend FORCE_INLINE void _tx_udr_empty_irq(void);
+        int availableForWrite();
       #endif
 
       #if ENABLED(SERIAL_XON_XOFF)
