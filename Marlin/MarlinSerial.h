@@ -54,7 +54,7 @@
   #define SERIAL_REGNAME_INTERNAL(registerbase,number,suffix) registerbase##number##suffix
 #endif
 
-#ifndef USBCON
+#if !(defined(__AVR__) && defined(USBCON))
   
   #if RX_BUFFER_SIZE > 256
     typedef uint16_t ring_buffer_pos_t;
@@ -72,6 +72,10 @@
     volatile uint8_t head, tail;
   } ring_buffer_t;
 
+  #if ENABLED(EMERGENCY_PARSER)
+    extern bool killed_by_M112;
+  #endif
+
   // include declaration of MarlinSerial for SERIAL_PORT
   #define T_PORT SERIAL_PORT
   #include "MarlinSerial_Template.h"
@@ -82,10 +86,10 @@
     #undef T_PORT
   #endif
 
-#endif // !USBCON
+#endif // !(__AVR__ && USBCON)
 
 // Use the UART for Bluetooth in AT90USB configurations
-#if defined(USBCON) && ENABLED(BLUETOOTH)
+#if defined(__AVR__) && defined(USBCON) && ENABLED(BLUETOOTH)
   extern HardwareSerial bluetoothSerial;
 #endif
 

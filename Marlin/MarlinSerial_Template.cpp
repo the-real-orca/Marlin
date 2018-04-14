@@ -28,7 +28,7 @@
  * Modified 28 September 2010 by Mark Sproul
  * Modified 14 February 2016 by Andreas Hardtung (added tx buffer)
  * Modified 01 October 2017 by Eduardo José Tagle (added XON/XOFF)
- * Modified 09 April 2018 by Stephan Veigl (multi instance version)
+ * Modified 15 April 2018 by Stephan Veigl (multi instance version)
  */
 
 #ifdef T_PORT
@@ -161,7 +161,7 @@
                 wait_for_user = wait_for_heatup = false;
                 break;
               case state_M112:
-                kill(PSTR(MSG_KILLED));
+                killed_by_M112 = true;
                 break;
               case state_M410:
                 quickstop_stepper();
@@ -389,12 +389,16 @@
     return (int)(RX_BUFFER_SIZE + h - t) & (RX_BUFFER_SIZE - 1);
   }
 
+  // declare global clear_command_queue() function
+  void clear_command_queue();
+
   void MarlinSerialX::flush(void) {
     // Don't change this order of operations. If the RX interrupt occurs between
     // reading rx_buffer_head and updating rx_buffer_tail, the previous rx_buffer_head
     // may be written to rx_buffer_tail, making the buffer appear full rather than empty.
     CRITICAL_SECTION_START;
-      rx_buffer.head = rx_buffer.tail;
+      rx_buffer.head = rx_buffer.tail = 0;
+      clear_command_queue();
     CRITICAL_SECTION_END;
 
     #if ENABLED(SERIAL_XON_XOFF)

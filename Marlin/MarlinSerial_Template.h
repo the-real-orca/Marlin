@@ -26,7 +26,7 @@
  *
  * Modified 28 September 2010 by Mark Sproul
  * Modified 14 February 2016 by Andreas Hardtung (added tx buffer)
- * Modified 09 April 2018 by Stephan Veigl (multi instance version)
+ * Modified 15 April 2018 by Stephan Veigl (multi instance version)
  */
 
 /*

@@ -115,7 +115,7 @@
  * pause and wait until all commands you send on one port are finished, before you can 
  * switch to the other port.
  */ 
-#define SEC_SERIAL_PORT 2
+#define SEC_SERIAL_PORT 2 //TEST
 
 /**
  * This setting determines the communication speed of the printer.

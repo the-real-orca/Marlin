@@ -40,13 +40,13 @@
 
 // MYSERIAL is the currently active serial port
 // For the beginning (and for single port systems) we use the primary serial port.
-#ifdef SEC_SERIAL_PORT constexpr 
-  Stream *MYSERIAL = &PRIM_SERIAL;
+#ifdef SEC_SERIAL_PORT 
+  Stream *MYSERIAL0 = &PRIM_SERIAL;
 #else
-  constexpr Stream *MYSERIAL = &PRIM_SERIAL;
+  constexpr Stream *MYSERIAL0 = &PRIM_SERIAL;
 #endif 
 
-#if !defined(USBCON) && (defined(UBRRH) || defined(UBRR0H) || defined(UBRR1H) || defined(UBRR2H) || defined(UBRR3H))
+#if !(defined(__AVR__) && defined(USBCON)) && (defined(UBRRH) || defined(UBRR0H) || defined(UBRR1H) || defined(UBRR2H) || defined(UBRR3H))
 
   #include "MarlinSerial.h"
   #include "Marlin.h"
@@ -59,6 +59,10 @@
     constexpr uint8_t XOFF_CHAR = 19;
   #endif
 
+  #if ENABLED(EMERGENCY_PARSER)
+    bool killed_by_M112 = false;
+  #endif
+
   // include actual implementation of MarlinSerial for SERIAL_PORT
   #define T_PORT SERIAL_PORT
   #include "MarlinSerial_Template.cpp"
@@ -68,9 +72,9 @@
     #include "MarlinSerial_Template.cpp"
     #undef T_PORT
   #endif
-#endif
+#endif // !(__AVR__ && USBCON) && (UBRRH || UBRR0H || UBRR1H || UBRR2H || UBRR3H)
 
 // For AT90USB targets use the UART for BT interfacing
-#if defined(USBCON) && ENABLED(BLUETOOTH)
+#if defined(__AVR__) && defined(USBCON) && ENABLED(BLUETOOTH)
   HardwareSerial bluetoothSerial;
 #endif
