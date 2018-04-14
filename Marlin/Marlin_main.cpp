@@ -1018,10 +1018,10 @@ inline void get_serial_commands(Stream &serial_stream) {
 
   #ifdef SEC_SERIAL_PORT
     /**
-     * Ignore other serial port while we still receive data from the active port (MYSERIAL)
+     * Ignore other serial port while we still receive data from the active port (myserial)
      * Otherwise switch to current ports if we receive data on this port.
      */
-    if ( &serial_stream != MYSERIAL0 ) {
+    if ( &serial_stream != myserial ) {
       if ( serial_stream.available() ) {
         if ( serial_count || busy_state != NOT_BUSY ) {
           // there is an incomplete command from the active port in the queue / processed
@@ -1029,7 +1029,7 @@ inline void get_serial_commands(Stream &serial_stream) {
           while (serial_stream.read() >= 0) {} // clear input buffer
           return; 
         }
-        MYSERIAL0 = &serial_stream; // switch active port
+        myserial = &serial_stream; // switch active port
       }
       else
         return; // no data on serial port

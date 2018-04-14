@@ -38,12 +38,12 @@
 #include "MarlinSerial.h"
 #include "Marlin.h"
 
-// MYSERIAL is the currently active serial port
+// myserial is the currently active serial port
 // For the beginning (and for single port systems) we use the primary serial port.
 #ifdef SEC_SERIAL_PORT 
-  Stream *MYSERIAL0 = &PRIM_SERIAL;
+  Stream *myserial = &PRIM_SERIAL;
 #else
-  constexpr Stream *MYSERIAL0 = &PRIM_SERIAL;
+  constexpr Stream *myserial = &PRIM_SERIAL;
 #endif 
 
 #if !(defined(__AVR__) && defined(USBCON)) && (defined(UBRRH) || defined(UBRR0H) || defined(UBRR1H) || defined(UBRR2H) || defined(UBRR3H))
