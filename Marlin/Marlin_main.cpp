@@ -11384,6 +11384,44 @@ inline void gcode_M355() {
 
 #endif // MIXING_EXTRUDER
 
+#if ENABLED(FIRMWAREUPDATE_PASSTHROUGH)
+
+  /**
+   * M997: Perform in-application firmware update 
+   * 
+   * Switches to serial pass-through mode to perform an 
+   * firmware update for th connected WiFi module.
+   */
+  inline void gcode_M997() {
+    // stop hotends and turn off motors
+    thermalManager.disable_all_heaters();
+    disable_all_steppers();
+  
+    // handle parameters
+    const uint8_t module_index = parser.byteval('S', 3);    // WiFi module index should be 3 -> ignored by the current implementation
+    const uint8_t pin = parser.byteval('P', FIRMWAREUPDATE_PIN);
+
+    // enable exit pin
+    if (pin_is_protected(pin) ) {
+      SERIAL_ECHOPGM("protected ");
+      return;
+    }
+    pinMode(FIRMWAREUPDATE_PIN, INPUT_PULLUP);
+
+    // pass-through until exit pin is triggered
+    SERIAL_FLUSH();
+    while ( !digitalRead(FIRMWAREUPDATE_PIN) ) {
+// TODO
+
+
+      idle();
+      delay(1); // give system a chance to do house keeping
+    }
+
+  }
+
+#endif // FIRMWAREUPDATE_PASSTHROUGH
+
 /**
  * M999: Restart after being stopped
  *
@@ -12366,6 +12404,11 @@ void process_parsed_command() {
         #if ENABLED(TMC_Z_CALIBRATION)
           case 915: gcode_M915(); break;                          // M915: TMC Z axis calibration routine
         #endif
+      #endif
+
+
+      #if ENABLED(FIRMWAREUPDATE_PASSTHROUGH)
+        case 997: gcode_M997(); gcode_M999(); break;                            // M997: Perform in-application firmware update 
       #endif
 
       case 999: gcode_M999(); break;                              // M999: Restart after being Stopped

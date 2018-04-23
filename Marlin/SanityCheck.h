@@ -322,6 +322,9 @@
 #if defined(SEC_SERIAL_PORT) && SERIAL_PORT == SEC_SERIAL_PORT
   #error "SEC_SERIAL_PORT (secondary serial port) cannot be the same as SERIAL_PORT"
 #endif  
+#if ENABLED(FIRMWAREUPDATE_PASSTHROUGH) && !defined(SEC_SERIAL_PORT)
+  #error "FIRMWAREUPDATE_PASSTHROUGH requires SEC_SERIAL_PORT"
+#endif  
 #if SERIAL_PORT > 7
   #error "Set SERIAL_PORT to the port on your board. Usually this is 0."
 #endif

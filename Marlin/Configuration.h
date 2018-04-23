@@ -115,7 +115,7 @@
  * pause and wait until all commands you send on one port are finished, before you can 
  * switch to the other port.
  */ 
-//#define SEC_SERIAL_PORT 2
+#define SEC_SERIAL_PORT 2
 
 /**
  * This setting determines the communication speed of the printer.
@@ -132,6 +132,16 @@
  * activate echo for serial port
  */
 #define SERIAL_ECHO_INPUT
+
+/**
+ * enable serial pass-through for firmware-update M997
+ */
+#define FIRMWAREUPDATE_PASSTHROUGH
+#if ENABLED(FIRMWAREUPDATE_PASSTHROUGH)
+  // pin number to exit serial pass-through mode
+  #define FIRMWAREUPDATE_PIN 23 
+#endif
+
 
 // Enable the Bluetooth serial interface on AT90USB devices
 //#define BLUETOOTH
