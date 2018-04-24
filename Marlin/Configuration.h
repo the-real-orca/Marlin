@@ -138,7 +138,7 @@
  */
 #define FIRMWAREUPDATE_PASSTHROUGH
 #if ENABLED(FIRMWAREUPDATE_PASSTHROUGH)
-  // pin number to exit serial pass-through mode
+  // pin to exit serial pass-through mode
   #define FIRMWAREUPDATE_PIN 23 
 #endif
 

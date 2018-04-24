@@ -11398,8 +11398,12 @@ inline void gcode_M355() {
     disable_all_steppers();
   
     // handle parameters
-    const uint8_t module_index = parser.byteval('S', 3);    // WiFi module index should be 3 -> ignored by the current implementation
-    const uint8_t pin = parser.byteval('P', FIRMWAREUPDATE_PIN);
+    uint8_t module_index = parser.byteval('S', 3);    // WiFi module index should be 3 -> ignored by the current implementation
+    uint8_t pin = 0;
+    #ifdef FIRMWAREUPDATE_PIN
+      pin = FIRMWAREUPDATE_PIN;
+    #endif
+    pin = parser.byteval('P', pin);
 
     // enable exit pin
     if (pin_is_protected(pin) ) {
@@ -11411,10 +11415,14 @@ inline void gcode_M355() {
     // pass-through until exit pin is triggered
     SERIAL_FLUSH();
     while ( !digitalRead(FIRMWAREUPDATE_PIN) ) {
-// TODO
+      while ( PRIM_SERIAL.available() ) {
+        SEC_SERIAL.write( PRIM_SERIAL.read() );
+      }
+      while ( SEC_SERIAL.available() ) {
+        PRIM_SERIAL.write( SEC_SERIAL.read() );
+      }
 
-
-      idle();
+      lcd_update(); // keep LCD alive
       delay(1); // give system a chance to do house keeping
     }
 
