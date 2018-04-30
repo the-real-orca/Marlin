@@ -11407,24 +11407,41 @@ inline void gcode_M355() {
 
     // enable exit pin
     if (pin_is_protected(pin) ) {
-      SERIAL_ECHOPGM("protected ");
+      SERIAL_ECHOPGM("protected");
       return;
     }
-    pinMode(FIRMWAREUPDATE_PIN, INPUT_PULLUP);
+    pinMode(pin, INPUT_PULLUP);
 
     // pass-through until exit pin is triggered
-    SERIAL_FLUSH();
-    while ( !digitalRead(FIRMWAREUPDATE_PIN) ) {
+    PRIM_SERIAL.println("serial pass-through enabled");
+    PRIM_SERIAL.println(">>>");
+    PRIM_SERIAL.flush();
+    SEC_SERIAL.flush();
+    delay(100);
+    while ( digitalRead(pin) ) {
       while ( PRIM_SERIAL.available() ) {
         SEC_SERIAL.write( PRIM_SERIAL.read() );
+        #if ENABLED(USE_WATCHDOG)
+          watchdog_reset();
+        #endif
       }
       while ( SEC_SERIAL.available() ) {
         PRIM_SERIAL.write( SEC_SERIAL.read() );
+        #if ENABLED(USE_WATCHDOG)
+          watchdog_reset();
+        #endif
       }
 
       lcd_update(); // keep LCD alive
       delay(1); // give system a chance to do house keeping
+      #if ENABLED(USE_WATCHDOG)
+        watchdog_reset();
+      #endif
     }
+    PRIM_SERIAL.flush();
+    SEC_SERIAL.flush();
+    PRIM_SERIAL.println("<<<");
+    PRIM_SERIAL.println("serial pass-through disabled");
 
   }
 
@@ -12416,7 +12433,7 @@ void process_parsed_command() {
 
 
       #if ENABLED(FIRMWAREUPDATE_PASSTHROUGH)
-        case 997: gcode_M997(); gcode_M999(); break;                            // M997: Perform in-application firmware update 
+        case 997: gcode_M997(); break;                            // M997: Perform in-application firmware update 
       #endif
 
       case 999: gcode_M999(); break;                              // M999: Restart after being Stopped
