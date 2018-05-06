@@ -705,6 +705,7 @@
   #define HAS_HEATER_3 (PIN_EXISTS(HEATER_3))
   #define HAS_HEATER_4 (PIN_EXISTS(HEATER_4))
   #define HAS_HEATER_BED (PIN_EXISTS(HEATER_BED))
+  #define HAS_HEATER_CHAMBER (PIN_EXISTS(HEATER_CHAMBER))
 
   // Thermal protection
   #define HAS_THERMALLY_PROTECTED_BED (ENABLED(THERMAL_PROTECTION_BED) && HAS_TEMP_BED && HAS_HEATER_BED)
@@ -812,6 +813,16 @@
       #define HEATER_BED_INVERTING false
     #endif
     #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN, (v) ^ HEATER_BED_INVERTING)
+  #endif
+
+  /**
+   * Heated chamber requires settings
+   */
+  #if HAS_HEATER_CHAMBER
+    #ifndef HEATER_CHAMBER_INVERTING
+      #define HEATER_CHAMBER_INVERTING false
+    #endif
+    #define WRITE_HEATER_CHAMBER(v) WRITE(HEATER_CHAMBER_PIN, (v) ^ HEATER_CHAMBER_INVERTING)
   #endif
 
   /**

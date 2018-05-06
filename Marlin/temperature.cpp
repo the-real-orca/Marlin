@@ -1197,6 +1197,9 @@ void Temperature::init() {
   #endif
   #if HAS_TEMP_CHAMBER
     ANALOG_SELECT(TEMP_CHAMBER_PIN);
+    #if HAS_HEATER_CHAMBER
+      WRITE_HEATER_CHAMBER(LOW);
+    #endif
   #endif
   #if ENABLED(FILAMENT_WIDTH_SENSOR)
     ANALOG_SELECT(FILWIDTH_PIN);
