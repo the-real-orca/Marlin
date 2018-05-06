@@ -131,7 +131,7 @@
 /**
  * activate echo for serial port
  */
-#define SERIAL_ECHO_INPUT
+//#define SERIAL_ECHO_INPUT
 
 // Enable the Bluetooth serial interface on AT90USB devices
 //#define BLUETOOTH
@@ -139,7 +139,30 @@
 // The following define selects which electronics board you have.
 // Please choose the name from boards.h that matches your setup
 #define MOTHERBOARD BOARD_RAMPS_14_EEB
+
+// custom pins
 #define FAN_PIN 6
+#define TEMP_CHAMBER_PIN 3      // Analog Input
+#define FAN_CHAMBER_PIN 63      // chamber extension brown
+#define HEATER_CHAMBER_PIN 59   // chamber extension orange
+#define HEATER_CHAMBER_INVERTING true
+#define DOOR_CHAMBER_PIN 64     // door switch
+
+/*
+ * Chamber Extension
+ * 
+ *  cable     RAMPS   function
+ *  1 black   GND   -> GND
+ *  2 brown   D63   -> chamber fan
+ *  3 red     5V    -> 5V
+ *  4 orange  D59   -> chamber heater
+ *  5 yellow  D64   -> door switch
+ *  6 green
+ *  7 blue
+ *  8 viollet
+ *  9 gray
+ * 10 white
+*/
 
 // Optional custom name for your RepStrap or other custom machine
 // Displayed in the LCD "Ready" message
@@ -153,7 +176,7 @@
 
 // This defines the number of extruders
 // :[1, 2, 3, 4, 5]
-#define EXTRUDERS 1
+#define EXTRUDERS 1 // = HOTENDS
 
 // Generally expected filament diameter (1.75, 2.85, 3.0, ...). Used for Volumetric, Filament Width Sensor, etc.
 #define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
@@ -322,7 +345,6 @@
 #define TEMP_SENSOR_4 0
 #define TEMP_SENSOR_BED 1
 #define TEMP_SENSOR_CHAMBER 4
-#define TEMP_CHAMBER_PIN 3  // Analog Input
 
 // Dummy thermistor constant temperature readings, for use with 998 and 999
 #define DUMMY_THERMISTOR_998_VALUE 25
@@ -573,14 +595,14 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 404.3861, 700}
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 200, 200, 404.3861, 700}
 
 /**
  * Default Max Feed Rate (mm/s)
  * Override with M203
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 500, 500, 10, 25 }        // (mm/sec)
+#define DEFAULT_MAX_FEEDRATE          { 400, 400, 10, 25 }        // (mm/sec)
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -588,7 +610,7 @@
  * Override with M201
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 3000, 3000, 100, 10000 }
+#define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 100, 500 }
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -684,7 +706,8 @@
  */
 //#define BLTOUCH
 #if ENABLED(BLTOUCH)
-  //#define BLTOUCH_DELAY 375   // (ms) Enable and increase if needed
+  #define Z_PROBE_SERVO_NR 3
+  #define BLTOUCH_DELAY 375   // (ms) Enable and increase if needed
 #endif
 
 /**
@@ -728,9 +751,23 @@
  *      O-- FRONT --+
  *    (0,0)
  */
-#define X_PROBE_OFFSET_FROM_EXTRUDER 30  // X offset: -left  +right  [of the nozzle]
-#define Y_PROBE_OFFSET_FROM_EXTRUDER 37  // Y offset: -front +behind [the nozzle]
-#define Z_PROBE_OFFSET_FROM_EXTRUDER -1.7   // Z offset: -below +above  [the nozzle]
+#if ENABLED(FIX_MOUNTED_PROBE)
+/*
+  // inductive probe
+  #define X_PROBE_OFFSET_FROM_EXTRUDER 30  // X offset: -left  +right  [of the nozzle]
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER 37  // Y offset: -front +behind [the nozzle]
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -1.7   // Z offset: -below +above  [the nozzle]
+*/
+  // capacitive probe
+  #define X_PROBE_OFFSET_FROM_EXTRUDER 0  // X offset: -left  +right  [of the nozzle]
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER -40  // Y offset: -front +behind [the nozzle]
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -4.4   // Z offset: -below +above  [the nozzle]
+#endif
+#if ENABLED(BLTOUCH)
+  #define X_PROBE_OFFSET_FROM_EXTRUDER 28  // X offset: -left  +right  [of the nozzle]
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER 25  // Y offset: -front +behind [the nozzle]
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -5.3   // Z offset: -below +above  [the nozzle]
+#endif
 
 // Certain types of probes need to stay away from edges
 #define MIN_PROBE_EDGE 25
@@ -974,7 +1011,7 @@
 #if ENABLED(AUTO_BED_LEVELING_LINEAR) || ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 5
+  #define GRID_MAX_POINTS_X 5 // TODO 16
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Set the boundaries for probing (where the probe can reach).
@@ -1128,7 +1165,7 @@
 #endif
 
 // Homing speeds (mm/m)
-#define HOMING_FEEDRATE_XY (50*60)
+#define HOMING_FEEDRATE_XY (40*60)
 #define HOMING_FEEDRATE_Z  (5*60)
 
 // @section calibrate
@@ -1860,12 +1897,12 @@
  * Set this manually if there are extra servos needing manual control.
  * Leave undefined or set to 0 to entirely disable the servo subsystem.
  */
-#define NUM_SERVOS 1 // Servo index starts with 0 for M280 command
+#define NUM_SERVOS 4 // Servo index starts with 0 for M280 command
 
 // Delay (in milliseconds) before the next move will start, to give the servo time to reach its target angle.
 // 300ms is a good value but you can try less delay.
 // If the servo can't reach the requested position, increase it.
-#define SERVO_DELAY { 300 }
+#define SERVO_DELAY { 300, 300, 300, 300 }
 
 // Servo deactivation
 //
