@@ -145,7 +145,7 @@
 #define TEMP_CHAMBER_PIN 3      // Analog Input
 #define FAN_CHAMBER_PIN 63      // chamber extension brown
 #define HEATER_CHAMBER_PIN 59   // chamber extension orange
-#define HEATER_CHAMBER_INVERTING true
+#define HEATER_CHAMBER_INVERTING false
 #define DOOR_CHAMBER_PIN 64     // door switch
 
 /*
@@ -595,14 +595,15 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 200, 200, 404.3861, 700}
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 200, 200, 404.3861, 700}
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 200, 200, 401.1767, 700}
 
 /**
  * Default Max Feed Rate (mm/s)
  * Override with M203
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4]]]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 400, 400, 10, 25 }        // (mm/sec)
+#define DEFAULT_MAX_FEEDRATE          { 400, 400, 15, 25 }        // (mm/sec)
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -752,25 +753,26 @@
  *    (0,0)
  */
 #if ENABLED(FIX_MOUNTED_PROBE)
-/*
   // inductive probe
   #define X_PROBE_OFFSET_FROM_EXTRUDER 30  // X offset: -left  +right  [of the nozzle]
   #define Y_PROBE_OFFSET_FROM_EXTRUDER 37  // Y offset: -front +behind [the nozzle]
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER -1.7   // Z offset: -below +above  [the nozzle]
-*/
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER 0   // Z offset: -below +above  [the nozzle]
+
+/*
   // capacitive probe
   #define X_PROBE_OFFSET_FROM_EXTRUDER 0  // X offset: -left  +right  [of the nozzle]
   #define Y_PROBE_OFFSET_FROM_EXTRUDER -40  // Y offset: -front +behind [the nozzle]
   #define Z_PROBE_OFFSET_FROM_EXTRUDER -4.4   // Z offset: -below +above  [the nozzle]
+*/
 #endif
 #if ENABLED(BLTOUCH)
   #define X_PROBE_OFFSET_FROM_EXTRUDER 28  // X offset: -left  +right  [of the nozzle]
   #define Y_PROBE_OFFSET_FROM_EXTRUDER 25  // Y offset: -front +behind [the nozzle]
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER -5.3   // Z offset: -below +above  [the nozzle]
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER 0   // Z offset: -below +above  [the nozzle]
 #endif
 
 // Certain types of probes need to stay away from edges
-#define MIN_PROBE_EDGE 25
+#define MIN_PROBE_EDGE 30
 
 // X and Y axis travel speed (mm/m) between probes
 #define XY_PROBE_SPEED 8000
@@ -1011,7 +1013,7 @@
 #if ENABLED(AUTO_BED_LEVELING_LINEAR) || ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 5 // TODO 16
+  #define GRID_MAX_POINTS_X 16 // TODO 5
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Set the boundaries for probing (where the probe can reach).
@@ -1117,7 +1119,7 @@
 // Use MANUAL_#_HOME_OFF for positions relative to the end-stop.
 // #define MANUAL_X_HOME_OFF 0
 // #define MANUAL_Y_HOME_OFF 0
-#define MANUAL_Z_HOME_OFF 1.8
+#define MANUAL_Z_HOME_OFF 0
 
 // Use MANUAL_#_HOME_POS for absolute positions
 //#define MANUAL_X_HOME_POS 0
@@ -1164,9 +1166,9 @@
   #define Z_SAFE_HOMING_Y_POINT ((Y_BED_SIZE) / 2)    // Y point for Z homing when homing all axes (G28).
 #endif
 
-// Homing speeds (mm/m)
+// Homing speeds (mm/min)
 #define HOMING_FEEDRATE_XY (40*60)
-#define HOMING_FEEDRATE_Z  (5*60)
+#define HOMING_FEEDRATE_Z  (6*60)
 
 // @section calibrate
 
