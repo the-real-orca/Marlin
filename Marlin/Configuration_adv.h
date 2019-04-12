@@ -1707,6 +1707,23 @@
    */
   #define TMC_ADV() {  }
 
+#else // HAS_TRINAMIC
+
+  // disable chip select pins
+  #define X_CS_PIN          -1
+  #define Y_CS_PIN          -1
+  #define Z_CS_PIN          -1
+  #define X2_CS_PIN         -1
+  #define Y2_CS_PIN         -1
+  #define Z2_CS_PIN         -1
+  #define Z3_CS_PIN         -1
+  #define E0_CS_PIN         -1
+  #define E1_CS_PIN         -1
+  #define E2_CS_PIN         -1
+  #define E3_CS_PIN         -1
+  #define E4_CS_PIN         -1
+  #define E5_CS_PIN         -1
+
 #endif // HAS_TRINAMIC
 
 // @section L6470
