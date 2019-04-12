@@ -229,8 +229,8 @@ hotend_info_t Temperature::temp_hotend[HOTENDS]; // = { 0 }
     #endif
     #if WATCH_CHAMBER
       heater_watch_t Temperature::watch_chamber = { 0 };
-      millis_t Temperature::next_chamber_check_ms;
     #endif
+    millis_t Temperature::next_chamber_check_ms;
   #endif // HAS_HEATED_CHAMBER
 #endif // HAS_TEMP_CHAMBER
 
@@ -1071,27 +1071,28 @@ void Temperature::manage_heater() {
         }
       #endif // WATCH_CHAMBER
 
-      if (PENDING(ms, next_chamber_check_ms)) return;
-      next_chamber_check_ms = ms + CHAMBER_CHECK_INTERVAL;
+      if (!PENDING(ms, next_chamber_check_ms)) {
+        next_chamber_check_ms = ms + CHAMBER_CHECK_INTERVAL;
 
-      if (WITHIN(temp_chamber.current, CHAMBER_MINTEMP, CHAMBER_MAXTEMP)) {
-        #if ENABLED(CHAMBER_LIMIT_SWITCHING)
-          if (temp_chamber.current >= temp_chamber.target + TEMP_CHAMBER_HYSTERESIS)
-            temp_chamber.soft_pwm_amount = 0;
-          else if (temp_chamber.current <= temp_chamber.target - (TEMP_CHAMBER_HYSTERESIS))
-            temp_chamber.soft_pwm_amount = MAX_CHAMBER_POWER >> 1;
-        #else // !PIDTEMPCHAMBER && !CHAMBER_LIMIT_SWITCHING
-          temp_chamber.soft_pwm_amount = temp_chamber.current < temp_chamber.target ? MAX_CHAMBER_POWER >> 1 : 0;
+        if (WITHIN(temp_chamber.current, CHAMBER_MINTEMP, CHAMBER_MAXTEMP)) {
+          #if ENABLED(CHAMBER_LIMIT_SWITCHING)
+            if (temp_chamber.current >= temp_chamber.target + TEMP_CHAMBER_HYSTERESIS)
+              temp_chamber.soft_pwm_amount = 0;
+            else if (temp_chamber.current <= temp_chamber.target - (TEMP_CHAMBER_HYSTERESIS))
+              temp_chamber.soft_pwm_amount = MAX_CHAMBER_POWER >> 1;
+          #else // !PIDTEMPCHAMBER && !CHAMBER_LIMIT_SWITCHING
+            temp_chamber.soft_pwm_amount = temp_chamber.current < temp_chamber.target ? MAX_CHAMBER_POWER >> 1 : 0;
+          #endif
+        }
+        else {
+          temp_chamber.soft_pwm_amount = 0;
+          WRITE_HEATER_CHAMBER(LOW);
+        }
+
+        #if ENABLED(THERMAL_PROTECTION_CHAMBER)
+          thermal_runaway_protection(tr_state_machine_chamber, temp_chamber.current, temp_chamber.target, -2, THERMAL_PROTECTION_CHAMBER_PERIOD, THERMAL_PROTECTION_CHAMBER_HYSTERESIS);
         #endif
-      }
-      else {
-        temp_chamber.soft_pwm_amount = 0;
-        WRITE_HEATER_CHAMBER(LOW);
-      }
-
-      #if ENABLED(THERMAL_PROTECTION_CHAMBER)
-        thermal_runaway_protection(tr_state_machine_chamber, temp_chamber.current, temp_chamber.target, -2, THERMAL_PROTECTION_CHAMBER_PERIOD, THERMAL_PROTECTION_CHAMBER_HYSTERESIS);
-      #endif
+      }      
 
       // TODO: Implement true PID pwm
       //temp_bed.soft_pwm_amount = WITHIN(temp_chamber.current, CHAMBER_MINTEMP, CHAMBER_MAXTEMP) ? (int)get_pid_output_chamber() >> 1 : 0;
@@ -1578,8 +1579,8 @@ void Temperature::init() {
 
 #if WATCH_CHAMBER
   /**
-   * Start Heating Sanity Check for hotends that are below
-   * their target temperature by a configurable margin.
+   * Start Heating Sanity Check for chamber that is below
+   * its target temperature by a configurable margin.
    * This is called when the temperature is set. (M141, M191)
    */
   void Temperature::start_watching_chamber() {
