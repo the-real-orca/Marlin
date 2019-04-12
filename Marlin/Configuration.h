@@ -391,7 +391,7 @@
 #define TEMP_SENSOR_5 0
 #define TEMP_SENSOR_BED 0
 #define TEMP_SENSOR_CHAMBER 0
-#define CHAMBER_HEATER_PIN -1  // On/off pin for enclosure heating system
+#define TEMP_CHAMBER_PIN -1 // Analog Input
 
 // Dummy thermistor constant temperature readings, for use with 998 and 999
 #define DUMMY_THERMISTOR_998_VALUE 25
@@ -410,7 +410,7 @@
 #define TEMP_BED_WINDOW          1  // (°C) Temperature proximity for the "temperature reached" timer
 #define TEMP_BED_HYSTERESIS      3  // (°C) Temperature proximity considered "close enough" to the target
 
-#define TEMP_CHAMBER_HYSTERESIS  3  // (°C) Temperature proximity considered "close enough" to the target
+#define TEMP_CHAMBER_HYSTERESIS  1  // (°C) Temperature proximity considered "close enough" to the target
 
 // Below this temperature the heater will be switched off
 // because it probably indicates a broken thermistor wire.
@@ -522,6 +522,22 @@
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 #endif // PIDTEMPBED
+
+
+//===========================================================================
+//============================= Chamber Temperature Control ===============
+//===========================================================================
+
+/**
+ * Chamber Heating
+ *
+ * Bang-bang will be used and CHAMBER_LIMIT_SWITCHING will enable hysteresis. 
+ */
+
+#define CHAMBER_LIMIT_SWITCHING
+#define HEATER_CHAMBER_PIN -1  // on/off pin for heating system
+//#define HEATER_CHAMBER_INVERTING false // default is not inverted heater
+
 
 // @section extruder
 

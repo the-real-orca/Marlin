@@ -598,7 +598,10 @@ Temperature::Temperature() { }
 int Temperature::getHeaterPower(const int heater) {
   return (
     #if HAS_HEATED_BED
-      heater < 0 ? temp_bed.soft_pwm_amount :
+      heater == -1 ? temp_bed.soft_pwm_amount :
+    #endif
+    #if HAS_HEATED_CHAMBER
+      heater == -2 ? temp_chamber.soft_pwm_amount :
     #endif
     temp_hotend[heater].soft_pwm_amount
   );
@@ -1073,9 +1076,9 @@ void Temperature::manage_heater() {
 
       if (WITHIN(temp_chamber.current, CHAMBER_MINTEMP, CHAMBER_MAXTEMP)) {
         #if ENABLED(CHAMBER_LIMIT_SWITCHING)
-          if (temp_chamber.current >= temp_chamber.target + CHAMBER_HYSTERESIS)
+          if (temp_chamber.current >= temp_chamber.target + TEMP_CHAMBER_HYSTERESIS)
             temp_chamber.soft_pwm_amount = 0;
-          else if (temp_chamber.current <= temp_chamber.target - (CHAMBER_HYSTERESIS))
+          else if (temp_chamber.current <= temp_chamber.target - (TEMP_CHAMBER_HYSTERESIS))
             temp_chamber.soft_pwm_amount = MAX_CHAMBER_POWER >> 1;
         #else // !PIDTEMPCHAMBER && !CHAMBER_LIMIT_SWITCHING
           temp_chamber.soft_pwm_amount = temp_chamber.current < temp_chamber.target ? MAX_CHAMBER_POWER >> 1 : 0;
