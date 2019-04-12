@@ -55,11 +55,12 @@
  */
 #if TEMP_SENSOR_CHAMBER
   #define CHAMBER_MINTEMP             5
-  #define CHAMBER_MAXTEMP            60
+  #define CHAMBER_MAXTEMP            55
   #define TEMP_CHAMBER_HYSTERESIS     1   // (°C) Temperature proximity considered "close enough" to the target
   #define THERMAL_PROTECTION_CHAMBER      // Enable thermal protection for the heated chamber
-  //#define CHAMBER_LIMIT_SWITCHING
-  //#define HEATER_CHAMBER_PIN       44   // Chamber heater on/off pin
+  #define CHAMBER_LIMIT_SWITCHING
+  #define HEATER_CHAMBER_PIN         40   // Chamber heater on/off pin
+  #define TEMP_CHAMBER_PIN            3      // Analog Input
   //#define HEATER_CHAMBER_INVERTING false
 #endif
 
@@ -129,14 +130,14 @@
  * Thermal Protection parameters for the heated chamber.
  */
 #if ENABLED(THERMAL_PROTECTION_CHAMBER)
-  #define THERMAL_PROTECTION_CHAMBER_PERIOD 20    // Seconds
+  #define THERMAL_PROTECTION_CHAMBER_PERIOD 60    // Seconds
   #define THERMAL_PROTECTION_CHAMBER_HYSTERESIS 2 // Degrees Celsius
 
   /**
    * Heated chamber watch settings (M141/M191).
    */
-  #define WATCH_CHAMBER_TEMP_PERIOD 60            // Seconds
-  #define WATCH_CHAMBER_TEMP_INCREASE 2           // Degrees Celsius
+  #define WATCH_CHAMBER_TEMP_PERIOD 300           // Seconds
+  #define WATCH_CHAMBER_TEMP_INCREASE 1           // Degrees Celsius
 #endif
 
 #if ENABLED(PIDTEMP)
