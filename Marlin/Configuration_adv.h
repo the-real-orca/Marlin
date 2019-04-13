@@ -59,7 +59,7 @@
   #define TEMP_CHAMBER_HYSTERESIS     1   // (°C) Temperature proximity considered "close enough" to the target
   #define CHAMBER_LIMIT_SWITCHING
   #define HEATER_CHAMBER_PIN         40   // Chamber heater on/off pin
-  #define TEMP_CHAMBER_PIN            3      // Analog Input
+  #define TEMP_CHAMBER_PIN            3   // analog input for thermistor
   //#define HEATER_CHAMBER_INVERTING false
 #endif
 
@@ -129,7 +129,7 @@
  * Thermal Protection parameters for the heated chamber.
  */
 #if ENABLED(THERMAL_PROTECTION_CHAMBER)
-  #define THERMAL_PROTECTION_CHAMBER_PERIOD 60    // Seconds
+  #define THERMAL_PROTECTION_CHAMBER_PERIOD 20    // Seconds
   #define THERMAL_PROTECTION_CHAMBER_HYSTERESIS 2 // Degrees Celsius
 
   /**
