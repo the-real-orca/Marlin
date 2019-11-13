@@ -394,15 +394,15 @@
   //#define SLOW_PWM_HEATERS      // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
   //#define PID_PARAMS_PER_HOTEND // Uses separate PID parameters for each extruder (useful for mismatched extruders)
                                   // Set/get with gcode: M301 E[extruder number, 0-2]
-  #define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
+  #define PID_FUNCTIONAL_RANGE 15 // If the temperature difference between the target temperature and the actual temperature
                                   // is more than PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
 
   // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 
   // Tronxy X1
-  #define DEFAULT_Kp 16.20
-  #define DEFAULT_Ki 1.11
-  #define DEFAULT_Kd 59.06
+  #define DEFAULT_Kp 12.87
+  #define DEFAULT_Ki 0.67
+  #define DEFAULT_Kd 61.40
 
   // MakerGear
   //#define DEFAULT_Kp 7.0
@@ -640,7 +640,7 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 1600, 90 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 100, 100, 1600, 92 }
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -939,11 +939,11 @@
 #define Y_BED_SIZE 145
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
-#define X_MIN_POS -5
-#define Y_MIN_POS -20
-#define Z_MIN_POS -0.15
-#define X_MAX_POS X_BED_SIZE
-#define Y_MAX_POS Y_BED_SIZE
+#define X_MIN_POS -X_BED_SIZE/2 - 5
+#define Y_MIN_POS -Y_BED_SIZE/2 - 20
+#define Z_MIN_POS 0
+#define X_MAX_POS X_BED_SIZE/2
+#define Y_MAX_POS Y_BED_SIZE/2
 #define Z_MAX_POS 150
 
 /**
@@ -1507,7 +1507,7 @@
  * you must uncomment the following option or it won't work.
  *
  */
-#define SDSUPPORT
+//#define SDSUPPORT
 
 /**
  * SD CARD: SPI SPEED
