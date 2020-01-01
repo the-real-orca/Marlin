@@ -904,10 +904,10 @@
  *
  * Specify a Probe position as { X, Y, Z }
  */
-#define NOZZLE_TO_PROBE_OFFSET { -30, -32, -1.85 }
+#define NOZZLE_TO_PROBE_OFFSET { -30, -32, -1.80 }
 
 // Certain types of probes need to stay away from edges
-#define MIN_PROBE_EDGE 10
+#define MIN_PROBE_EDGE 20
 
 // X and Y axis travel speed (mm/m) between probes
 #define XY_PROBE_SPEED 8000
@@ -1196,7 +1196,7 @@
 #if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 5
+  #define GRID_MAX_POINTS_X 4
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column
@@ -1642,7 +1642,7 @@
 // This option overrides the default number of encoder pulses needed to
 // produce one step. Should be increased for high-resolution encoders.
 //
-#define ENCODER_PULSES_PER_STEP 2
+#define ENCODER_PULSES_PER_STEP 4
 
 //
 // Use this option to override the number of step signals required to
