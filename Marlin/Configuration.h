@@ -123,7 +123,7 @@
  *
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
-#define BAUDRATE 250000
+#define BAUDRATE 115200
 
 // Enable the Bluetooth serial interface on AT90USB devices
 //#define BLUETOOTH
@@ -904,7 +904,7 @@
  *
  * Specify a Probe position as { X, Y, Z }
  */
-#define NOZZLE_TO_PROBE_OFFSET { -30, -32, -1.80 }
+#define NOZZLE_TO_PROBE_OFFSET { -30, -32, -2.10 }
 
 // Certain types of probes need to stay away from edges
 #define MIN_PROBE_EDGE 20
