@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -43,6 +43,12 @@
 #define BOARD_INFO_NAME "Re-ARM RAMPS 1.4"
 
 //
+// EEPROM
+//
+#define FLASH_EEPROM_EMULATION
+//#define SDCARD_EEPROM_EMULATION
+
+//
 // Servos
 //
 #define SERVO0_PIN         P1_20   // (11)
@@ -59,6 +65,7 @@
 #define Y_MAX_PIN          P1_27   // (15) 10k pullup to 3.3V, 1K series
 #define Z_MIN_PIN          P1_29   // (18) 10k pullup to 3.3V, 1K series
 #define Z_MAX_PIN          P1_28   // (19) 10k pullup to 3.3V, 1K series
+#define ONBOARD_ENDSTOPPULLUPS     // Board has built-in pullups
 
 //
 // Steppers
@@ -113,7 +120,7 @@
   #endif
 #endif
 
-#if HAS_TMC220x
+#if HAS_TMC_UART
   /**
    * TMC2208/TMC2209 stepper drivers
    *

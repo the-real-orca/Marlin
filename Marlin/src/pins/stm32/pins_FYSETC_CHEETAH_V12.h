@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -38,7 +38,7 @@
 
 #define FAN1_PIN          PB0 // Fan1
 
-#if HAS_TMC220x
+#if HAS_TMC_UART
 
   /**
    * TMC2208/TMC2209 stepper drivers

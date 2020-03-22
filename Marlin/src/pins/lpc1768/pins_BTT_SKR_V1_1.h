@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -22,6 +22,12 @@
 #pragma once
 
 #define BOARD_INFO_NAME "BIGTREE SKR 1.1"
+
+//
+// EEPROM
+//
+#define FLASH_EEPROM_EMULATION
+//#define SDCARD_EEPROM_EMULATION
 
 //
 // Limit Switches
@@ -90,7 +96,7 @@
 // requires jumpers on the SKR V1.1 board as documented here:
 // https://www.facebook.com/groups/505736576548648/permalink/630639874058317/
 #ifndef SDCARD_CONNECTION
-  #if ENABLED(MKS_MINI_12864)
+  #if EITHER(MKS_MINI_12864, ENDER2_STOCKDISPLAY)
     #define SDCARD_CONNECTION LCD
   #else
     #define SDCARD_CONNECTION ONBOARD
@@ -103,7 +109,7 @@
 
 // Trinamic driver support
 
-#if HAS_TRINAMIC
+#if HAS_TRINAMIC_CONFIG
   // Using TMC devices in intelligent mode requires extra connections to each device. Unfortunately
   // the SKR does not have many free pins (especially if a display is in use). The SPI-based devices
   // will require 3 connections (clock, mosi, miso), plus a chip select line (CS) for each driver.
@@ -230,4 +236,4 @@
 #endif
 
 // Include common SKR pins
-#include "pins_BTT_SKR.h"
+#include "pins_BTT_SKR_common.h"

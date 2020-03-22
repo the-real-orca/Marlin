@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -115,7 +115,7 @@
   #endif
 #endif
 
-#if HAS_TMC220x
+#if HAS_TMC_UART
   /**
    * TMC2208/TMC2209 stepper drivers
    *
@@ -181,7 +181,25 @@
 //
 // Misc. Functions
 //
-#define SDSS               PB12
+
+#ifndef SDCARD_CONNECTION
+  #define SDCARD_CONNECTION LCD
+#endif
+
+//
+// Onboard SD card
+//   NOT compatible with LCD
+//
+#if SDCARD_CONNECTION == ONBOARD && !HAS_SPI_LCD
+  #define SOFTWARE_SPI            // Use soft SPI for onboard SD
+  #define SDSS             PA4
+  #define SCK_PIN          PA5
+  #define MISO_PIN         PA6
+  #define MOSI_PIN         PB5
+#else
+  #define SDSS             PB12
+#endif
+
 
 /**
  *               _____                                             _____

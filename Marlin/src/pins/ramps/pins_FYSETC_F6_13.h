@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -22,18 +22,16 @@
 #pragma once
 
 //
-// FYSETC F6 pin assignments
+// FYSETC F6 1.3 (and 1.4) pin assignments
 //
 
 #ifndef __AVR_ATmega2560__
   #error "Oops! Select 'FYSETC F6' in 'Tools > Board.'"
 #endif
 
-#if ENABLED(SD_DETECT_INVERTED)
-  //#error "SD_DETECT_INVERTED must be disabled for the FYSETC_F6_13 board."
+#ifndef BOARD_INFO_NAME
+  #define BOARD_INFO_NAME "FYSETC F6 1.3"
 #endif
-
-#define BOARD_INFO_NAME "FYSETC F6 1.3"
 
 #define RESET_PIN          30
 #define SPI_FLASH_CS       83
@@ -54,7 +52,9 @@
 #define Y_MIN_PIN          14
 #define Y_MAX_PIN          15
 #define Z_MIN_PIN          12
-#define Z_MAX_PIN           9
+#ifndef Z_MAX_PIN
+  #define Z_MAX_PIN         9
+#endif
 
 #ifndef FIL_RUNOUT_PIN
   #define FIL_RUNOUT_PIN   SERVO2_PIN
@@ -117,25 +117,49 @@
 // the jumper next to the limit switch socket when using sensorless homing.
 //
 
-#if HAS_TMC220x
+#if HAS_TMC_UART
   /**
    * TMC2208/TMC2209 stepper drivers
    *
    * Software serial communication pins.
    * At the moment, F6 rx pins are not pc interrupt pins
    */
-  #define X_SERIAL_RX_PIN  -1   // 71
-  #define X_SERIAL_TX_PIN  72
-  #define Y_SERIAL_RX_PIN  -1   // 73
-  #define Y_SERIAL_TX_PIN  75
-  #define Z_SERIAL_RX_PIN  -1   // 78
-  #define Z_SERIAL_TX_PIN  79
-  #define E0_SERIAL_RX_PIN -1   // 76
-  #define E0_SERIAL_TX_PIN 77
-  #define E1_SERIAL_RX_PIN -1   // 80
-  #define E1_SERIAL_TX_PIN 81
-  #define E2_SERIAL_RX_PIN -1   // 22
-  #define E2_SERIAL_TX_PIN 82
+  #ifndef X_SERIAL_RX_PIN
+    #define X_SERIAL_RX_PIN  -1   // 71
+  #endif
+  #ifndef X_SERIAL_TX_PIN
+    #define X_SERIAL_TX_PIN  72
+  #endif
+  #ifndef Y_SERIAL_RX_PIN
+    #define Y_SERIAL_RX_PIN  -1   // 73
+  #endif
+  #ifndef Y_SERIAL_TX_PIN
+    #define Y_SERIAL_TX_PIN  75
+  #endif
+  #ifndef Z_SERIAL_RX_PIN
+    #define Z_SERIAL_RX_PIN  -1   // 78
+  #endif
+  #ifndef Z_SERIAL_TX_PIN
+    #define Z_SERIAL_TX_PIN  79
+  #endif
+  #ifndef E0_SERIAL_RX_PIN
+    #define E0_SERIAL_RX_PIN -1   // 76
+  #endif
+  #ifndef E0_SERIAL_TX_PIN
+    #define E0_SERIAL_TX_PIN 77
+  #endif
+  #ifndef E1_SERIAL_RX_PIN
+    #define E1_SERIAL_RX_PIN -1   // 80
+  #endif
+  #ifndef E1_SERIAL_TX_PIN
+    #define E1_SERIAL_TX_PIN 81
+  #endif
+  #ifndef E2_SERIAL_RX_PIN
+    #define E2_SERIAL_RX_PIN -1   // 22
+  #endif
+  #ifndef E2_SERIAL_TX_PIN
+    #define E2_SERIAL_TX_PIN 82
+  #endif
 #endif
 
 //
@@ -197,9 +221,11 @@
   #define DOGLCD_A0        16
   #define DOGLCD_CS        17
 
-  #define LCD_BACKLIGHT_PIN -1
-  #define KILL_PIN         41
+  #if ENABLED(FYSETC_GENERIC_12864_1_1)
+    #define LCD_BACKLIGHT_PIN 27
+  #endif
 
+  #define KILL_PIN         41
   #define LCD_RESET_PIN    23   // Must be high or open for LCD to operate normally.
                                 // Seems to work best if left open.
 
