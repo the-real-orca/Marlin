@@ -701,7 +701,7 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80.30, 80.45, 400, 415 } // Geeetech extruder: 430 steps/mm, BMG extruder: 415 steps/mm 
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80.25, 80.46, 400, 415 } // Geeetech extruder: 430 steps/mm, BMG extruder: 415 steps/mm 
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -907,7 +907,7 @@
 #define NOZZLE_TO_PROBE_OFFSET { -30, -32, -2.5 }
 
 // Certain types of probes need to stay away from edges
-#define MIN_PROBE_EDGE 20
+#define MIN_PROBE_EDGE 40
 
 // X and Y axis travel speed (mm/m) between probes
 #define XY_PROBE_SPEED 8000
@@ -1040,8 +1040,8 @@
 #define Y_BED_SIZE 250
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
-#define X_MIN_POS (-X_BED_SIZE/2) - 12
-#define Y_MIN_POS (-Y_BED_SIZE/2) - 6
+#define X_MIN_POS -137
+#define Y_MIN_POS -132
 #define Z_MIN_POS 0
 #define X_MAX_POS (X_BED_SIZE/2)
 #define Y_MAX_POS (Y_BED_SIZE/2)
@@ -1186,7 +1186,7 @@
   #if ENABLED(G26_MESH_VALIDATION)
     #define MESH_TEST_NOZZLE_SIZE    0.4  // (mm) Diameter of primary nozzle.
     #define MESH_TEST_LAYER_HEIGHT   0.2  // (mm) Default layer height for the G26 Mesh Validation Tool.
-    #define MESH_TEST_HOTEND_TEMP  205    // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
+    #define MESH_TEST_HOTEND_TEMP  210    // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
     #define MESH_TEST_BED_TEMP      60    // (°C) Default bed temperature for the G26 Mesh Validation Tool.
     #define G26_XY_FEEDRATE         20    // (mm/s) Feedrate for XY Moves for the G26 Mesh Validation Tool.
   #endif
@@ -1428,12 +1428,12 @@
 // Preheat Constants
 #define PREHEAT_1_LABEL       "PLA"
 #define PREHEAT_1_TEMP_HOTEND 210
-#define PREHEAT_1_TEMP_BED     60
+#define PREHEAT_1_TEMP_BED     55
 #define PREHEAT_1_FAN_SPEED     0 // Value from 0 to 255
 
-#define PREHEAT_2_LABEL       "ABS"
-#define PREHEAT_2_TEMP_HOTEND 240
-#define PREHEAT_2_TEMP_BED     95
+#define PREHEAT_2_LABEL       "PETG"
+#define PREHEAT_2_TEMP_HOTEND 235
+#define PREHEAT_2_TEMP_BED     75
 #define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
 
 /**
