@@ -142,13 +142,13 @@
 
 // This defines the number of extruders
 // :[0, 1, 2, 3, 4, 5, 6, 7, 8]
-#define EXTRUDERS 2 // DUAL
+#define EXTRUDERS 1 // DUAL
 
 // Generally expected filament diameter (1.75, 2.85, 3.0, ...). Used for Volumetric, Filament Width Sensor, etc.
 #define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
 
 // For Cyclops or any "multi-extruder" that shares a single nozzle.
-#define SINGLENOZZLE // DUAL
+// #define SINGLENOZZLE // DUAL
 
 // Save and restore temperature and fan speed on tool-change.
 // Set standby for the unselected tool with M104/106/109 T...
@@ -300,7 +300,7 @@
  *   - This implementation supports up to two mixing extruders.
  *   - Enable DIRECT_MIXING_IN_G1 for M165 and mixing in G1 (from Pia Taubert's reference implementation).
  */
-//#define MIXING_EXTRUDER // DUAL
+#define MIXING_EXTRUDER // DUAL
 #if ENABLED(MIXING_EXTRUDER)
   #define MIXING_STEPPERS 2        // Number of steppers in your mixing extruder
   #define MIXING_VIRTUAL_TOOLS 8  // Use the Virtual Tool method with M163 and M164
@@ -1186,17 +1186,21 @@
  * RAMPS-based boards use SERVO3_PIN for the first runout sensor.
  * For other boards you may need to define FIL_RUNOUT_PIN, FIL_RUNOUT2_PIN, etc.
  */
-#define FILAMENT_RUNOUT_SENSOR // TODO
+#define FILAMENT_RUNOUT_SENSOR // DUAL
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FIL_RUNOUT_ENABLED_DEFAULT true // Enable the sensor on startup. Override with M412 followed by M500.
   #define NUM_RUNOUT_SENSORS   2          // Number of sensors, up to one per extruder. Define a FIL_RUNOUT#_PIN for each.
   #define FIL_RUNOUT_STATE     HIGH       // Pin state indicating that filament is NOT present.
   #define FIL_RUNOUT_PULLUP               // Use internal pullup for filament runout pins.
   //#define FIL_RUNOUT_PULLDOWN           // Use internal pulldown for filament runout pins.
+  //#define WATCH_ALL_RUNOUT_SENSORS      // Execute runout script on any triggering sensor, not only for the active extruder.
+                                          // This is automatically enabled for MIXING_EXTRUDERs.
+  #define FILAMENT_RUNOUT_SENSOR_DEBUG    // Debug runout sensor
 
   // Set one or more commands to execute on filament runout.
   // (After 'M412 H' Marlin will ask the host to handle the process.)
-  #define FILAMENT_RUNOUT_SCRIPT "M600" // FIXME
+  // Use %t as placeholder for the triggering sensor, e.g. "M600 T%t". (requires NUM_RUNOUT_SENSORS > 1)
+  #define FILAMENT_RUNOUT_SCRIPT "M600 T%t" // DUAL
 
   // After a runout is detected, continue printing this length of filament
   // before executing the runout script. Useful for a sensor at the end of
