@@ -53,7 +53,7 @@ namespace Language_es {
   PROGMEM Language_Str MSG_MAIN                            = _UxGT("Menú principal");
   PROGMEM Language_Str MSG_ADVANCED_SETTINGS               = _UxGT("Ajustes avanzados");
   PROGMEM Language_Str MSG_CONFIGURATION                   = _UxGT("Configuración");
-  PROGMEM Language_Str MSG_AUTOSTART                       = _UxGT("Inicio automático");
+  PROGMEM Language_Str MSG_RUN_AUTO_FILES                  = _UxGT("Inicio automático");
   PROGMEM Language_Str MSG_DISABLE_STEPPERS                = _UxGT("Apagar motores");
   PROGMEM Language_Str MSG_DEBUG_MENU                      = _UxGT("Menú depuración");
   PROGMEM Language_Str MSG_PROGRESS_BAR_TEST               = _UxGT("Prob. barra progreso");
@@ -313,7 +313,7 @@ namespace Language_es {
   PROGMEM Language_Str MSG_TEMPERATURE                     = _UxGT("Temperatura");
   PROGMEM Language_Str MSG_MOTION                          = _UxGT("Movimiento");
   PROGMEM Language_Str MSG_FILAMENT                        = _UxGT("Filamento");
-  PROGMEM Language_Str MSG_VOLUMETRIC_ENABLED              = _UxGT("E en mm³");
+  PROGMEM Language_Str MSG_VOLUMETRIC_ENABLED              = _UxGT("E en mm") SUPERSCRIPT_THREE;
   PROGMEM Language_Str MSG_FILAMENT_DIAM                   = _UxGT("Diámetro Fil.");
   PROGMEM Language_Str MSG_FILAMENT_DIAM_E                 = _UxGT("Diámetro Fil. *");
   PROGMEM Language_Str MSG_FILAMENT_UNLOAD                 = _UxGT("Descarga mm");

@@ -142,13 +142,13 @@
 
 // This defines the number of extruders
 // :[0, 1, 2, 3, 4, 5, 6, 7, 8]
-#define EXTRUDERS 1 // DUAL
+#define EXTRUDERS 1
 
 // Generally expected filament diameter (1.75, 2.85, 3.0, ...). Used for Volumetric, Filament Width Sensor, etc.
 #define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
 
 // For Cyclops or any "multi-extruder" that shares a single nozzle.
-// #define SINGLENOZZLE // DUAL
+//#define SINGLENOZZLE
 
 // Save and restore temperature and fan speed on tool-change.
 // Set standby for the unselected tool with M104/106/109 T...
@@ -158,33 +158,19 @@
 #endif
 
 /**
- * Průša MK2 Single Nozzle Multi-Material Multiplexer, and variants.
+ * Multi-Material Unit
+ * Set to one of these predefined models:
  *
- * This device allows one stepper driver on a control board to drive
- * two to eight stepper motors, one at a time, in a manner suitable
- * for extruders.
- *
- * This option only allows the multiplexer to switch on tool-change.
- * Additional options to configure custom E moves are pending.
- */
-//#define MK2_MULTIPLEXER
-#if ENABLED(MK2_MULTIPLEXER)
-  // Override the default DIO selector pins here, if needed.
-  // Some pins files may provide defaults for these pins.
-  //#define E_MUX0_PIN 40  // Always Required
-  //#define E_MUX1_PIN 42  // Needed for 3 to 8 inputs
-  //#define E_MUX2_PIN 44  // Needed for 5 to 8 inputs
-#endif
-
-/**
- * Průša Multi-Material Unit v2
+ *   PRUSA_MMU1      : Průša MMU1 (The "multiplexer" version)
+ *   PRUSA_MMU2      : Průša MMU2
+ *   PRUSA_MMU2S     : Průša MMU2S (Requires MK3S extruder with motion sensor, EXTRUDERS = 5)
+ *   SMUFF_EMU_MMU2  : Technik Gegg SMUFF (Průša MMU2 emulation mode)
+ *   SMUFF_EMU_MMU2S : Technik Gegg SMUFF (Průša MMU2S emulation mode)
  *
  * Requires NOZZLE_PARK_FEATURE to park print head in case MMU unit fails.
- * Requires EXTRUDERS = 5
- *
- * For additional configuration see Configuration_adv.h
+ * See additional options in Configuration_adv.h.
  */
-//#define PRUSA_MMU2
+//#define MMU_MODEL PRUSA_MMU2
 
 // A dual extruder that uses a single stepper motor
 //#define SWITCHING_EXTRUDER
@@ -300,14 +286,14 @@
  *   - This implementation supports up to two mixing extruders.
  *   - Enable DIRECT_MIXING_IN_G1 for M165 and mixing in G1 (from Pia Taubert's reference implementation).
  */
-#define MIXING_EXTRUDER // DUAL
+#define MIXING_EXTRUDER
 #if ENABLED(MIXING_EXTRUDER)
   #define MIXING_STEPPERS 2        // Number of steppers in your mixing extruder
-  #define MIXING_VIRTUAL_TOOLS 8  // Use the Virtual Tool method with M163 and M164
+  #define MIXING_VIRTUAL_TOOLS 16  // Use the Virtual Tool method with M163 and M164
   //#define DIRECT_MIXING_IN_G1    // Allow ABCDHI mix factors in G1 movement commands
-  #define GRADIENT_MIX             // Support for gradient mixing with M166 and LCD
+  #define GRADIENT_MIX           // Support for gradient mixing with M166 and LCD
   #if ENABLED(GRADIENT_MIX)
-    #define GRADIENT_VTOOL         // Add M166 T to use a V-tool index as a Gradient alias
+    #define GRADIENT_VTOOL       // Add M166 T to use a V-tool index as a Gradient alias
   #endif
 #endif
 
@@ -344,9 +330,10 @@
     #define AUTO_POWER_E_FANS
     #define AUTO_POWER_CONTROLLERFAN
     #define AUTO_POWER_CHAMBER_FAN
-    //#define AUTO_POWER_E_TEMP        50 // (°C) Turn on PSU over this temperature
-    //#define AUTO_POWER_CHAMBER_TEMP  30 // (°C) Turn on PSU over this temperature
-    #define POWER_TIMEOUT 30
+    //#define AUTO_POWER_E_TEMP        50 // (°C) Turn on PSU if any extruder is over this temperature
+    //#define AUTO_POWER_CHAMBER_TEMP  30 // (°C) Turn on PSU if the chamber is over this temperature
+    #define POWER_TIMEOUT              30 // (s) Turn off power if the machine is idle for this duration
+    //#define POWER_OFF_DELAY          60 // (s) Delay of poweroff after M81 command. Useful to let fans run for extra time.
   #endif
 #endif
 
@@ -388,8 +375,10 @@
  *    13 : 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE"
  *    15 : 100k thermistor calibration for JGAurora A5 hotend
  *    18 : ATC Semitec 204GT-2 (4.7k pullup) Dagoma.Fr - MKS_Base_DKU001327
- *    20 : Pt100 with circuit in the Ultimainboard V2.x with 5v excitation (AVR)
- *    21 : Pt100 with circuit in the Ultimainboard V2.x with 3.3v excitation (STM32 \ LPC176x....)
+ *    20 : Pt100 with circuit in the Ultimainboard V2.x with mainboard ADC reference voltage = INA826 amplifier-board supply voltage.
+ *         NOTES: (1) Must use an ADC input with no pullup. (2) Some INA826 amplifiers are unreliable at 3.3V so consider using sensor 147, 110, or 21.
+ *    21 : Pt100 with circuit in the Ultimainboard V2.x with 3.3v ADC reference voltage (STM32, LPC176x....) and 5V INA826 amplifier board supply.
+ *         NOTE: ADC pins are not 5V tolerant. Not recommended because it's possible to damage the CPU by going over 500°C.
  *    22 : 100k (hotend) with 4.7k pullup to 3.3V and 220R to analog input (as in GTM32 Pro vB)
  *    23 : 100k (bed) with 4.7k pullup to 3.3v and 220R to analog input (as in GTM32 Pro vB)
  *    30 : Kis3d Silicone heating mat 200W/300W with 6mm precision cast plate (EN AW 5083) NTC100K / B3950 (4.7k pullup)
@@ -435,11 +424,11 @@
 #define DUMMY_THERMISTOR_998_VALUE 25
 #define DUMMY_THERMISTOR_999_VALUE 100
 
-// Resistor values when using a MAX31865 (sensor -5)
-// Sensor value is typically 100 (PT100) or 1000 (PT1000)
-// Calibration value is typically 430 ohm for AdaFruit PT100 modules and 4300 ohm for AdaFruit PT1000 modules.
-//#define MAX31865_SENSOR_OHMS      100
-//#define MAX31865_CALIBRATION_OHMS 430
+// Resistor values when using MAX31865 sensors (-5) on TEMP_SENSOR_0 / 1
+//#define MAX31865_SENSOR_OHMS_0      100   // (Ω) Typically 100 or 1000 (PT100 or PT1000)
+//#define MAX31865_CALIBRATION_OHMS_0 430   // (Ω) Typically 430 for AdaFruit PT100; 4300 for AdaFruit PT1000
+//#define MAX31865_SENSOR_OHMS_1      100
+//#define MAX31865_CALIBRATION_OHMS_1 430
 
 // Use temp sensor 1 as a redundant sensor with sensor 0. If the readings
 // from the two sensors differ too much the print will be aborted.
@@ -496,20 +485,17 @@
   //#define PID_PARAMS_PER_HOTEND // Uses separate PID parameters for each extruder (useful for mismatched extruders)
                                   // Set/get with gcode: M301 E[extruder number, 0-2]
 
-  // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
-
   // A20M
+  // M301 P41.07 I5.22 D80.74
+  #define DEFAULT_Kp 41.07
+  #define DEFAULT_Ki 5.22
+  #define DEFAULT_Kd 80.74
   #if ENABLED(PID_PARAMS_PER_HOTEND)
     // Specify between 1 and HOTENDS values per array.
     // If fewer than EXTRUDER values are provided, the last element will be repeated.
-    #define DEFAULT_Kp_LIST {  41.07,  41.07 }
-    #define DEFAULT_Ki_LIST {   5.22,   5.22 }
-    #define DEFAULT_Kd_LIST {  80.74,  80.74 }
-  #else
-    // M301 P41.07 I5.22 D80.74
-    #define DEFAULT_Kp 41.07
-    #define DEFAULT_Ki 5.22
-    #define DEFAULT_Kd 80.74
+    #define DEFAULT_Kp_LIST { DEFAULT_Kp, DEFAULT_Kp }
+    #define DEFAULT_Ki_LIST { DEFAULT_Ki, DEFAULT_Ki }
+    #define DEFAULT_Kd_LIST { DEFAULT_Kd, DEFAULT_Kd }
   #endif
 #endif // PIDTEMP
 
@@ -786,7 +772,7 @@
  *   M204 R    Retract Acceleration
  *   M204 T    Travel Acceleration
  */
-#define DEFAULT_ACCELERATION          2000    // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_ACCELERATION          1500    // X, Y, Z and E acceleration for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  3000    // E acceleration for retracts
 #define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration for travel (non printing) moves
 
@@ -802,7 +788,7 @@
 #if ENABLED(CLASSIC_JERK)
   #define DEFAULT_XJERK 10.0
   #define DEFAULT_YJERK 10.0
-  #define DEFAULT_ZJERK 0.4
+  #define DEFAULT_ZJERK  0.3
 
   //#define TRAVEL_EXTRA_XYJERK 0.0     // Additional jerk allowance for all travel moves
 
@@ -822,7 +808,7 @@
  *   https://blog.kyneticcnc.com/2018/10/computing-junction-deviation-for-marlin.html
  */
 #if DISABLED(CLASSIC_JERK)
-  #define JUNCTION_DEVIATION_MM 0.14  // (mm) Distance from real junction edge
+  #define JUNCTION_DEVIATION_MM 0.013 // (mm) Distance from real junction edge
   #define JD_HANDLE_SMALL_SEGMENTS    // Use curvature estimation instead of just the junction angle
                                       // for small segments (< 1mm) with large junction angles (> 135°).
 #endif
@@ -835,7 +821,7 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
-#define S_CURVE_ACCELERATION
+//#define S_CURVE_ACCELERATION
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -1038,9 +1024,9 @@
  *     But: `M851 Z+1` with a CLEARANCE of 2  =>  2mm from bed to nozzle.
  */
 #define Z_CLEARANCE_DEPLOY_PROBE   10 // Z Clearance for Deploy/Stow
-#define Z_CLEARANCE_BETWEEN_PROBES 5 // Z Clearance between probe points
-#define Z_CLEARANCE_MULTI_PROBE    5 // Z Clearance between multiple probes
-#define Z_AFTER_PROBING            5 // Z position after probing is done
+#define Z_CLEARANCE_BETWEEN_PROBES  5 // Z Clearance between probe points
+#define Z_CLEARANCE_MULTI_PROBE     5 // Z Clearance between multiple probes
+#define Z_AFTER_PROBING           5 // Z position after probing is done
 
 #define Z_PROBE_LOW_POINT          -2 // Farthest distance below the trigger-point to go before stopping
 
@@ -1049,7 +1035,8 @@
 #define Z_PROBE_OFFSET_RANGE_MAX +1
 
 // Enable the M48 repeatability test to test probe accuracy
-#define Z_MIN_PROBE_REPEATABILITY_TEST // TODO
+// TODO - for DEBUG ONLY
+#define Z_MIN_PROBE_REPEATABILITY_TEST
 
 // Before deploy/stow pause for user confirmation
 //#define PAUSE_BEFORE_DEPLOY_STOW
@@ -1115,8 +1102,8 @@
 
 // @section homing
 
-//#define NO_MOTION_BEFORE_HOMING // Inhibit movement until all axes have been homed
-
+//#define NO_MOTION_BEFORE_HOMING // Inhibit movement until all axes have been homed. Also enable HOME_AFTER_DEACTIVATE for extra safety.
+//#define HOME_AFTER_DEACTIVATE   // Require rehoming after steppers are deactivated. Also enable NO_MOTION_BEFORE_HOMING for extra safety.
 //#define UNKNOWN_Z_NO_RAISE      // Don't raise Z (lower the bed) if Z is "unknown." For beds that fall when Z is powered off.
 
 #define Z_HOMING_HEIGHT  4      // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
@@ -1186,21 +1173,51 @@
  * RAMPS-based boards use SERVO3_PIN for the first runout sensor.
  * For other boards you may need to define FIL_RUNOUT_PIN, FIL_RUNOUT2_PIN, etc.
  */
-#define FILAMENT_RUNOUT_SENSOR // DUAL
+#define FILAMENT_RUNOUT_SENSOR
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FIL_RUNOUT_ENABLED_DEFAULT true // Enable the sensor on startup. Override with M412 followed by M500.
   #define NUM_RUNOUT_SENSORS   2          // Number of sensors, up to one per extruder. Define a FIL_RUNOUT#_PIN for each.
+  
   #define FIL_RUNOUT_STATE     HIGH       // Pin state indicating that filament is NOT present.
   #define FIL_RUNOUT_PULLUP               // Use internal pullup for filament runout pins.
   //#define FIL_RUNOUT_PULLDOWN           // Use internal pulldown for filament runout pins.
-  //#define WATCH_ALL_RUNOUT_SENSORS      // Execute runout script on any triggering sensor, not only for the active extruder.
-                                          // This is automatically enabled for MIXING_EXTRUDERs.
-  #define FILAMENT_RUNOUT_SENSOR_DEBUG    // Debug runout sensor
+
+  // Override individually if the runout sensors vary
+  //#define FIL_RUNOUT1_STATE LOW
+  //#define FIL_RUNOUT1_PULLUP
+  //#define FIL_RUNOUT1_PULLDOWN
+
+  //#define FIL_RUNOUT2_STATE LOW
+  //#define FIL_RUNOUT2_PULLUP
+  //#define FIL_RUNOUT2_PULLDOWN
+
+  //#define FIL_RUNOUT3_STATE LOW
+  //#define FIL_RUNOUT3_PULLUP
+  //#define FIL_RUNOUT3_PULLDOWN
+
+  //#define FIL_RUNOUT4_STATE LOW
+  //#define FIL_RUNOUT4_PULLUP
+  //#define FIL_RUNOUT4_PULLDOWN
+
+  //#define FIL_RUNOUT5_STATE LOW
+  //#define FIL_RUNOUT5_PULLUP
+  //#define FIL_RUNOUT5_PULLDOWN
+
+  //#define FIL_RUNOUT6_STATE LOW
+  //#define FIL_RUNOUT6_PULLUP
+  //#define FIL_RUNOUT6_PULLDOWN
+
+  //#define FIL_RUNOUT7_STATE LOW
+  //#define FIL_RUNOUT7_PULLUP
+  //#define FIL_RUNOUT7_PULLDOWN
+
+  //#define FIL_RUNOUT8_STATE LOW
+  //#define FIL_RUNOUT8_PULLUP
+  //#define FIL_RUNOUT8_PULLDOWN
 
   // Set one or more commands to execute on filament runout.
   // (After 'M412 H' Marlin will ask the host to handle the process.)
-  // Use %t as placeholder for the triggering sensor, e.g. "M600 T%t". (requires NUM_RUNOUT_SENSORS > 1)
-  #define FILAMENT_RUNOUT_SCRIPT "M600 T%t" // DUAL
+  #define FILAMENT_RUNOUT_SCRIPT "M600"
 
   // After a runout is detected, continue printing this length of filament
   // before executing the runout script. Useful for a sensor at the end of
@@ -1287,11 +1304,11 @@
   /**
    * Enable the G26 Mesh Validation Pattern tool.
    */
-  #define G26_MESH_VALIDATION
+  //#define G26_MESH_VALIDATION
   #if ENABLED(G26_MESH_VALIDATION)
     #define MESH_TEST_NOZZLE_SIZE    0.4  // (mm) Diameter of primary nozzle.
     #define MESH_TEST_LAYER_HEIGHT   0.2  // (mm) Default layer height for the G26 Mesh Validation Tool.
-    #define MESH_TEST_HOTEND_TEMP  210    // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
+    #define MESH_TEST_HOTEND_TEMP  205    // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
     #define MESH_TEST_BED_TEMP      60    // (°C) Default bed temperature for the G26 Mesh Validation Tool.
     #define G26_XY_FEEDRATE         40    // (mm/s) Feedrate for XY Moves for the G26 Mesh Validation Tool.
     #define G26_RETRACT_MULTIPLIER   1.0  // G26 Q (retraction) used by default between mesh test elements.
@@ -1378,6 +1395,12 @@
   #define LEVEL_CORNERS_HEIGHT      0.0   // (mm) Z height of nozzle at leveling points
   #define LEVEL_CORNERS_Z_HOP       4.0   // (mm) Z height of nozzle between leveling points
   //#define LEVEL_CENTER_TOO              // Move to the center after the last corner
+  //#define LEVEL_CORNERS_USE_PROBE
+  #if ENABLED(LEVEL_CORNERS_USE_PROBE)
+    #define LEVEL_CORNERS_PROBE_TOLERANCE 0.1
+    #define LEVEL_CORNERS_VERIFY_RAISED   // After adjustment triggers the probe, re-probe to verify
+    //#define LEVEL_CORNERS_AUDIO_FEEDBACK
+  #endif
 #endif
 
 /**
@@ -1393,8 +1416,8 @@
 
 // Manually set the home position. Leave these undefined for automatic settings.
 // For DELTA this is the top-center of the Cartesian print volume.
-//#define MANUAL_X_HOME_POS X_MIN_POS
-//#define MANUAL_Y_HOME_POS Y_MIN_POS
+//#define MANUAL_X_HOME_POS 0
+//#define MANUAL_Y_HOME_POS 0
 //#define MANUAL_Z_HOME_POS 0
 
 // Use "Z Safe Homing" to avoid homing with a Z probe outside the bed area.
@@ -1513,7 +1536,8 @@
 //
 // M100 Free Memory Watcher
 //
-#define M100_FREE_MEMORY_WATCHER    // Add M100 (Free Memory Watcher) to debug memory usage TODO
+// TODO - for DEBUG ONLY
+#define M100_FREE_MEMORY_WATCHER    // Add M100 (Free Memory Watcher) to debug memory usage
 
 //
 // G20/G21 Inch mode support
@@ -1557,7 +1581,7 @@
   //#define NOZZLE_PARK_Y_ONLY          // Y move only is required to park
   #define NOZZLE_PARK_Z_RAISE_MIN   2   // (mm) Always raise Z by at least this distance
   #define NOZZLE_PARK_XY_FEEDRATE 150   // (mm/s) X and Y axes feedrate (also used for delta Z axis)
-  #define NOZZLE_PARK_Z_FEEDRATE 10   // (mm/s) Z axis feedrate (not used for delta printers)
+  #define NOZZLE_PARK_Z_FEEDRATE   10   // (mm/s) Z axis feedrate (not used for delta printers)
 #endif
 
 /**
@@ -1837,7 +1861,7 @@
 // If you have a speaker that can produce tones, enable it here.
 // By default Marlin assumes you have a buzzer with a fixed frequency.
 //
-#define SPEAKER
+//#define SPEAKER
 
 //
 // The duration and frequency for the UI feedback sound.
@@ -2011,9 +2035,13 @@
 // https://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
 #define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
-#define ST7920_DELAY_1 DELAY_NS(125)
-#define ST7920_DELAY_2 DELAY_NS(125)
-#define ST7920_DELAY_3 DELAY_NS(125)
+
+// TODO move to A20M config file (pins_GT2560_V3.h) -> LCD
+#if ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
+  #define ST7920_DELAY_1 DELAY_NS(125)
+  #define ST7920_DELAY_2 DELAY_NS(125)
+  #define ST7920_DELAY_3 DELAY_NS(125)
+#endif
 
 //
 // ReprapWorld Graphical LCD
@@ -2355,10 +2383,10 @@
 
   #define TOUCH_SCREEN_CALIBRATION
 
-  //#define XPT2046_X_CALIBRATION 12316
-  //#define XPT2046_Y_CALIBRATION -8981
-  //#define XPT2046_X_OFFSET        -43
-  //#define XPT2046_Y_OFFSET        257
+  //#define TOUCH_CALIBRATION_X 12316
+  //#define TOUCH_CALIBRATION_Y -8981
+  //#define TOUCH_OFFSET_X        -43
+  //#define TOUCH_OFFSET_Y        257
 
   #if ENABLED(TFT_COLOR_UI)
     //#define SINGLE_TOUCH_NAVIGATION
