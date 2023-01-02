@@ -491,10 +491,20 @@
                                   // Set/get with gcode: M301 E[extruder number, 0-2]
 
   // A20M
-  // M301 P41.07 I5.22 D80.74
-  #define DEFAULT_Kp 41.07
-  #define DEFAULT_Ki 5.22
-  #define DEFAULT_Kd 80.74
+  #if ENABLED(MIXING_EXTRUDER)
+    // Mixing Hotend
+    // M301 P41.07 I5.22 D80.74
+    #define DEFAULT_Kp 41.07
+    #define DEFAULT_Ki 5.22
+    #define DEFAULT_Kd 80.74
+  #else
+    // Single Hotend
+    // M301 P25 I3 D65
+    #define DEFAULT_Kp 31.87
+    #define DEFAULT_Ki 4.18
+    #define DEFAULT_Kd 60.70
+  #endif
+
   #if ENABLED(PID_PARAMS_PER_HOTEND)
     // Specify between 1 and HOTENDS values per array.
     // If fewer than EXTRUDER values are provided, the last element will be repeated.
@@ -786,7 +796,11 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80.25, 80.46, 400, 415 } // Geeetech extruder: 430 steps/mm, BMG extruder: 415 steps/mm
+// 16 steps (MS1: high, MS2: high: MS3: high)
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80.25, 80.46, 400, 415 } // Geeetech extruder: 430 steps/mm, BMG extruder: 415 steps/mm
+
+// 8 steps (MS1: high, MS2: high: MS3: low)
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 40.13, 40.23, 400, 415 } // Geeetech extruder: 430 steps/mm, BMG extruder: 415 steps/mm
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -1116,8 +1130,8 @@
 #define Z_PROBE_OFFSET_RANGE_MAX +1
 
 // Enable the M48 repeatability test to test probe accuracy
-// TODO - for DEBUG ONLY
-#define Z_MIN_PROBE_REPEATABILITY_TEST
+// for DEBUG ONLY
+//#define Z_MIN_PROBE_REPEATABILITY_TEST
 
 // Before deploy/stow pause for user confirmation
 //#define PAUSE_BEFORE_DEPLOY_STOW
@@ -1668,7 +1682,7 @@
 // M100 Free Memory Watcher
 //
 // TODO - for DEBUG ONLY
-#define M100_FREE_MEMORY_WATCHER    // Add M100 (Free Memory Watcher) to debug memory usage
+//#define M100_FREE_MEMORY_WATCHER    // Add M100 (Free Memory Watcher) to debug memory usage
 
 //
 // G20/G21 Inch mode support
