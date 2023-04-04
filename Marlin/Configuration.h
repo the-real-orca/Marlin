@@ -797,10 +797,10 @@
  *                                      X, Y, Z, E0 [, E1[, E2...]]
  */
 // 16 steps (MS1: high, MS2: high: MS3: high)
-//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80.25, 80.46, 400, 415 } // Geeetech extruder: 430 steps/mm, BMG extruder: 415 steps/mm
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80.25, 80.46, 400, 406 } // Geeetech extruder: 430 steps/mm, BMG extruder: 406 steps/mm
 
 // 8 steps (MS1: high, MS2: high: MS3: low)
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 40.13, 40.23, 400, 415 } // Geeetech extruder: 430 steps/mm, BMG extruder: 415 steps/mm
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 40.13, 40.23, 400, 406 } // Geeetech extruder: 430 steps/mm, BMG extruder: 406 steps/mm
 
 /**
  * Default Max Feed Rate (mm/s)
